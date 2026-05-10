@@ -47,10 +47,10 @@
 
     .layout {
       display: grid;
-      grid-template-columns: 1fr 360px;
+      grid-template-columns: 1fr 380px;
       gap: 18px;
       padding: 14px;
-      max-width: 1280px;
+      max-width: 1320px;
       margin: 0 auto;
     }
 
@@ -175,9 +175,15 @@
       cursor: pointer;
       box-shadow: 0 4px 0 rgba(0,0,0,0.25);
       margin-bottom: 10px;
+      transition: transform 0.05s ease;
     }
 
-    button:active {
+    button:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    button:active:not(:disabled) {
       transform: translateY(2px);
       box-shadow: 0 2px 0 rgba(0,0,0,0.25);
     }
@@ -185,6 +191,32 @@
     .primary { background: var(--green); }
     .secondary { background: var(--blue); }
     .danger { background: var(--red); }
+    .ok { background: #4ade80; }
+    .no { background: #fb7185; }
+    .neutral { background: #e5e7eb; }
+
+    .action-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .action-buttons button {
+      font-size: 26px;
+      padding: 10px;
+    }
+
+    .pending-note {
+      background: #fff7ed;
+      border: 3px dashed #9a3412;
+      border-radius: 16px;
+      padding: 10px;
+      text-align: center;
+      font-weight: 800;
+      margin: 10px 0;
+      display: none;
+    }
 
     .dice {
       font-size: 48px;
@@ -201,7 +233,7 @@
       border: 4px solid var(--ink);
       border-radius: 22px;
       padding: 16px;
-      min-height: 160px;
+      min-height: 178px;
       margin-top: 12px;
     }
 
@@ -253,7 +285,7 @@
     .active { outline: 5px solid #facc15; }
 
     .rules {
-      max-width: 1280px;
+      max-width: 1320px;
       margin: 0 auto 24px;
       padding: 0 14px;
     }
@@ -292,7 +324,20 @@
     <p class="subtitle">Juego cooperativo digital para 2 a 4 jugadores</p>
   </header>
 
-  <main class="layout">
+  <section id="startScreen" class="rules">
+    <details open>
+      <summary>Configurar partida</summary>
+      <p><strong>Selecciona la cantidad de jugadores:</strong></p>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:520px;margin:12px auto;">
+        <button class="primary" onclick="startGame(2)">2 jugadores</button>
+        <button class="primary" onclick="startGame(3)">3 jugadores</button>
+        <button class="primary" onclick="startGame(4)">4 jugadores</button>
+      </div>
+      <p style="text-align:center;"><strong>Recomendación:</strong> para niños pequeños, 2 o 3 jugadores hace la partida más rápida.</p>
+    </details>
+  </section>
+
+  <main id="gameArea" class="layout" style="display:none;">
     <section class="board-wrap">
       <div id="board" class="board"></div>
     </section>
@@ -308,15 +353,23 @@
       <div id="players" class="players"></div>
 
       <div id="dice" class="dice">🎲</div>
-      <button class="primary" onclick="rollDice()">Lanzar dado</button>
+      <button id="rollButton" class="primary" onclick="rollDice()">🎲 Lanzar dado</button>
       <button class="secondary" onclick="useCoins('reroll')">Usar 3 monedas: repetir dado</button>
       <button class="secondary" onclick="useCoins('life')">Usar 5 monedas: recuperar vida</button>
+      <button id="soundButton" class="neutral" onclick="toggleSound()">🔊 Sonido activado</button>
       <button class="danger" onclick="resetGame()">Reiniciar juego</button>
+
+      <div id="pendingNote" class="pending-note">Acción pendiente: confirma con ✅ o ❌ para continuar.</div>
 
       <div id="card" class="card-result">
         <div class="big">🕹️</div>
         <h3>Listos para jugar</h3>
         <p>Lancen el dado, avancen por el tablero y lleguen juntos al Jefe Final Pixel.</p>
+      </div>
+
+      <div class="action-buttons">
+        <button id="okButton" class="ok" onclick="resolvePending(true)" disabled>✅</button>
+        <button id="noButton" class="no" onclick="resolvePending(false)" disabled>❌</button>
       </div>
 
       <div id="log" class="log"></div>
@@ -328,6 +381,7 @@
       <summary>Reglas rápidas</summary>
       <p><strong>Objetivo:</strong> llegar a la casilla 60 y vencer al Jefe Final Pixel.</p>
       <p><strong>Cooperativo:</strong> todos juegan como equipo. Si ganan, ganan todos.</p>
+      <p><strong>Turnos:</strong> al caer en una casilla especial, primero lean la acción. Luego presionen ✅ si se cumple o ❌ si no se cumple.</p>
       <p><strong>Vidas:</strong> el equipo comienza con 3 vidas. Si llegan a 0, pierden la partida.</p>
       <p><strong>Monedas:</strong> 3 monedas permiten repetir el dado. 5 monedas permiten recuperar 1 vida.</p>
       <p><strong>Meta:</strong> basta con llegar o pasar la casilla 60.</p>
@@ -335,21 +389,18 @@
   </section>
 
   <script>
-    const numberOfPlayers = 4;
+    let numberOfPlayers = 4;
     const maxCell = 60;
 
-    let players = [
-      { name: "Jugador 1", pos: 1, cls: "p1" },
-      { name: "Jugador 2", pos: 1, cls: "p2" },
-      { name: "Jugador 3", pos: 1, cls: "p3" },
-      { name: "Jugador 4", pos: 1, cls: "p4" }
-    ];
+    let players = [];
 
     let currentPlayer = 0;
     let lives = 3;
     let coins = 0;
     let gameOver = false;
-    let lastDice = null;
+    let pendingAction = null;
+    let soundEnabled = true;
+    let audioCtx = null;
 
     const specialCells = {
       1: ["🎮", "SALIDA", "start"],
@@ -388,50 +439,99 @@
 
     const cards = {
       desafio: [
-        ["❓", "Robot Pixel", "Imita a un robot. Si el equipo adivina, ganan 1 moneda.", () => addCoins(1)],
-        ["❓", "Sonido Secreto", "Haz un sonido de videojuego. Si alguien lo reconoce, avancen 1 casilla.", () => movePlayer(currentPlayer, 1)],
-        ["❓", "Animal Misterioso", "Imita un animal sin hablar. Si el equipo adivina, ganan 1 moneda.", () => addCoins(1)],
-        ["❓", "Héroe Inventado", "Inventa el nombre de un héroe pixelado. Si todos lo aprueban, ganan 1 estrella/moneda.", () => addCoins(1)],
-        ["❓", "Dibujo Invisible", "Dibuja una figura en el aire. Si alguien adivina, avancen 1 casilla.", () => movePlayer(currentPlayer, 1)],
-        ["❓", "Adivinanza Estrella", "Brillo en el cielo y también en los juegos. ¿Qué soy? Respuesta: estrella. Si aciertan, ganan 1 moneda.", () => addCoins(1)],
-        ["❓", "Objeto Secreto", "Da una pista sobre un objeto de la casa. Si alguien adivina, ganan 1 moneda.", () => addCoins(1)],
-        ["❓", "Salto de Plataforma", "Actúa como si saltaras un obstáculo. Si lo haces, el equipo avanza 1 casilla.", () => movePlayer(currentPlayer, 1)]
+        ["❓", "Robot Pixel", "Imita a un robot. Si el equipo adivina, presionen ✅ y ganan 1 moneda.", () => addCoins(1), () => log("Desafío no completado. No pasa nada.")],
+        ["❓", "Sonido Secreto", "Haz un sonido de videojuego. Si alguien lo reconoce, presionen ✅ y avancen 1 casilla.", () => movePlayer(currentPlayer, 1), () => log("Desafío no completado. No pasa nada.")],
+        ["❓", "Animal Misterioso", "Imita un animal sin hablar. Si el equipo adivina, presionen ✅ y ganan 1 moneda.", () => addCoins(1), () => log("Desafío no completado. No pasa nada.")],
+        ["❓", "Héroe Inventado", "Inventa el nombre de un héroe pixelado. Si todos lo aprueban, presionen ✅ y ganan 1 moneda.", () => addCoins(1), () => log("Desafío no completado. No pasa nada.")],
+        ["❓", "Dibujo Invisible", "Dibuja una figura en el aire. Si alguien adivina, presionen ✅ y avancen 1 casilla.", () => movePlayer(currentPlayer, 1), () => log("Desafío no completado. No pasa nada.")],
+        ["❓", "Adivinanza Estrella", "Brillo en el cielo y también en los juegos. ¿Qué soy? Si responden estrella, presionen ✅ y ganan 1 moneda.", () => addCoins(1), () => log("Respuesta incorrecta. No pasa nada.")],
+        ["❓", "Objeto Secreto", "Da una pista sobre un objeto de la casa. Si alguien adivina, presionen ✅ y ganan 1 moneda.", () => addCoins(1), () => log("Desafío no completado. No pasa nada.")],
+        ["❓", "Salto de Plataforma", "Actúa como si saltaras un obstáculo. Si lo haces, presionen ✅ y avancen 1 casilla.", () => movePlayer(currentPlayer, 1), () => log("Desafío no completado. No pasa nada.")]
       ],
       bonus: [
-        ["⭐", "Súper Salto", "Avanza 3 casillas.", () => movePlayer(currentPlayer, 3)],
-        ["⭐", "Moneda Dorada", "El equipo gana 2 monedas.", () => addCoins(2)],
-        ["⭐", "Estrella Brillante", "Todos los jugadores avanzan 1 casilla.", () => moveAll(1)],
-        ["⭐", "Dado Mágico", "Lanza el dado otra vez.", () => log("Puedes lanzar otra vez en este turno.")],
-        ["⭐", "Portal Secreto", "Avanza hasta la siguiente casilla de portal.", () => moveToNextPortal()],
-        ["⭐", "Turbo Pixel", "El jugador que va más atrás avanza 3 casillas.", () => moveLastPlayer(3)]
+        ["⭐", "Súper Salto", "Presiona ✅ para avanzar 3 casillas.", () => movePlayer(currentPlayer, 3), () => log("Bonus cancelado.")],
+        ["⭐", "Moneda Dorada", "Presiona ✅ para ganar 2 monedas.", () => addCoins(2), () => log("Bonus cancelado.")],
+        ["⭐", "Estrella Brillante", "Presiona ✅ para que todos los jugadores avancen 1 casilla.", () => moveAll(1), () => log("Bonus cancelado.")],
+        ["⭐", "Dado Mágico", "Presiona ✅ para volver a lanzar el dado en este turno.", () => bonusReroll(), () => log("Bonus cancelado.")],
+        ["⭐", "Portal Secreto", "Presiona ✅ para avanzar hasta la siguiente casilla de portal.", () => moveToNextPortal(), () => log("Bonus cancelado.")],
+        ["⭐", "Turbo Pixel", "Presiona ✅ para que el jugador que va más atrás avance 3 casillas.", () => moveLastPlayer(3), () => log("Bonus cancelado.")]
       ],
       trampa: [
-        ["⚠️", "Nube Traviesa", "Retrocede 2 casillas.", () => movePlayer(currentPlayer, -2)],
-        ["⚠️", "Bloque Roto", "El equipo pierde 1 moneda.", () => addCoins(-1)],
-        ["⚠️", "Camino Resbaloso", "Retrocede 1 casilla.", () => movePlayer(currentPlayer, -1)],
-        ["⚠️", "Enemigo Escondido", "Lanza automática: si sale 1, 2 o 3, el equipo pierde 1 vida.", () => enemyHidden()]
+        ["⚠️", "Nube Traviesa", "Presiona ✅ para aplicar la trampa: retrocede 2 casillas. Presiona ❌ si usaron escudo o deciden evitarla.", () => movePlayer(currentPlayer, -2), () => log("Trampa evitada.")],
+        ["⚠️", "Bloque Roto", "Presiona ✅ para aplicar la trampa: el equipo pierde 1 moneda. Presiona ❌ si la evitan.", () => addCoins(-1), () => log("Trampa evitada.")],
+        ["⚠️", "Camino Resbaloso", "Presiona ✅ para aplicar la trampa: retrocede 1 casilla. Presiona ❌ si la evitan.", () => movePlayer(currentPlayer, -1), () => log("Trampa evitada.")],
+        ["⚠️", "Enemigo Escondido", "Presiona ✅ para lanzar contra el enemigo. Si sale 1, 2 o 3, pierden 1 vida. Presiona ❌ si la evitan.", () => enemyHidden(), () => log("Trampa evitada.")]
       ],
       duelo: [
-        ["⚔️", "Monstruo Verde", "Duelo automático: con 4, 5 o 6 ganan 1 moneda.", () => duel(4, () => addCoins(1), "Ganaron 1 moneda.")],
-        ["⚔️", "Robot Guardián", "Duelo automático: con 5 o 6 avanzan 2 casillas.", () => duel(5, () => movePlayer(currentPlayer, 2), "Avanzan 2 casillas.")],
-        ["⚔️", "Sombra Pixelada", "Duelo automático: con 1 o 2 retrocedes 1. Con 3 a 6 ganas 1 moneda.", () => shadowDuel()],
-        ["⚔️", "Mini Jefe", "Duelo automático: si sale 6, recuperan 1 vida.", () => duel(6, () => addLife(1), "Recuperan 1 vida.")]
+        ["⚔️", "Monstruo Verde", "Presiona ✅ para lanzar el duelo. Si sale 4, 5 o 6, ganan 1 moneda.", () => duel(4, () => addCoins(1), "Ganaron 1 moneda."), () => log("Duelo cancelado.")],
+        ["⚔️", "Robot Guardián", "Presiona ✅ para lanzar el duelo. Si sale 5 o 6, avanzan 2 casillas.", () => duel(5, () => movePlayer(currentPlayer, 2), "Avanzan 2 casillas."), () => log("Duelo cancelado.")],
+        ["⚔️", "Sombra Pixelada", "Presiona ✅ para lanzar el duelo. Con 1 o 2 retrocedes 1. Con 3 a 6 ganas 1 moneda.", () => shadowDuel(), () => log("Duelo cancelado.")],
+        ["⚔️", "Mini Jefe", "Presiona ✅ para lanzar el duelo. Si sale 6, recuperan 1 vida.", () => duel(6, () => addLife(1), "Recuperan 1 vida."), () => log("Duelo cancelado.")]
       ],
       ayuda: [
-        ["❤️", "Todos Juntos", "El jugador que va más atrás avanza 3 casillas.", () => moveLastPlayer(3)],
-        ["❤️", "Corazón Extra", "El equipo recupera 1 vida.", () => addLife(1)],
-        ["❤️", "Mano Amiga", "El jugador actual y el más atrasado avanzan 2 casillas.", () => { movePlayer(currentPlayer, 2); moveLastPlayer(2); }],
-        ["❤️", "Equipo Unido", "El equipo gana 1 moneda por cada jugador.", () => addCoins(numberOfPlayers)]
+        ["❤️", "Todos Juntos", "Presiona ✅ para que el jugador que va más atrás avance 3 casillas.", () => moveLastPlayer(3), () => log("Ayuda cancelada.")],
+        ["❤️", "Corazón Extra", "Presiona ✅ para recuperar 1 vida.", () => addLife(1), () => log("Ayuda cancelada.")],
+        ["❤️", "Mano Amiga", "Presiona ✅ para que el jugador actual y el más atrasado avancen 2 casillas.", () => { movePlayer(currentPlayer, 2); moveLastPlayer(2); }, () => log("Ayuda cancelada.")],
+        ["❤️", "Equipo Unido", "Presiona ✅ para ganar 1 moneda por cada jugador.", () => addCoins(numberOfPlayers), () => log("Ayuda cancelada.")]
       ],
       power: [
-        ["🛡️", "Botas Veloces", "Avanza 2 casillas extra.", () => movePlayer(currentPlayer, 2)],
-        ["🛡️", "Escudo Protector", "Evitan una trampa y ganan 1 moneda.", () => addCoins(1)],
-        ["🛡️", "Llave Pixelada", "Avanza hasta el portal más cercano.", () => moveToNextPortal()]
+        ["🛡️", "Botas Veloces", "Presiona ✅ para avanzar 2 casillas extra.", () => movePlayer(currentPlayer, 2), () => log("Power-Up cancelado.")],
+        ["🛡️", "Escudo Protector", "Presiona ✅ para ganar 1 moneda y considerar que evitaron una trampa.", () => addCoins(1), () => log("Power-Up cancelado.")],
+        ["🛡️", "Llave Pixelada", "Presiona ✅ para avanzar hasta el portal más cercano.", () => moveToNextPortal(), () => log("Power-Up cancelado.")]
       ],
       jefe: [
-        ["👾", "Jefe Final Pixel", "Reto final: hagan una adivinanza, una imitación creativa y luego saquen 4, 5 o 6 en el dado. Si superan 2 de 3, ganan.", () => finalBoss()]
+        ["👾", "Jefe Final Pixel", "Reto final: hagan una adivinanza, una imitación creativa y luego presionen ✅ para lanzar el dado final. Con 4, 5 o 6 ganan. Si fallan, pierden 1 vida.", () => finalBoss(), () => { loseLife(); if (!gameOver) showCard("👾", "El jefe resiste", "No superaron el reto final. Pierden 1 vida y pueden intentarlo de nuevo."); }]
       ]
     };
+
+    function ensureAudio() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+
+    function beep(freq = 440, duration = 0.08, type = "sine", volume = 0.08) {
+      if (!soundEnabled) return;
+      ensureAudio();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = type;
+      osc.frequency.value = freq;
+      gain.gain.value = volume;
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+      osc.stop(audioCtx.currentTime + duration);
+    }
+
+    function soundDice() {
+      if (!soundEnabled) return;
+      [180, 230, 170, 260, 210].forEach((f, i) => setTimeout(() => beep(f, 0.045, "square", 0.06), i * 55));
+    }
+
+    function soundOk() {
+      beep(520, 0.07, "triangle", 0.07);
+      setTimeout(() => beep(760, 0.09, "triangle", 0.07), 90);
+    }
+
+    function soundNo() {
+      beep(220, 0.08, "sawtooth", 0.06);
+      setTimeout(() => beep(160, 0.12, "sawtooth", 0.06), 90);
+    }
+
+    function soundWin() {
+      [523, 659, 784, 1046].forEach((f, i) => setTimeout(() => beep(f, 0.12, "triangle", 0.08), i * 130));
+    }
+
+    function soundCard() {
+      beep(640, 0.06, "sine", 0.05);
+      setTimeout(() => beep(820, 0.06, "sine", 0.05), 70);
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      document.getElementById("soundButton").textContent = soundEnabled ? "🔊 Sonido activado" : "🔇 Sonido desactivado";
+      if (soundEnabled) soundOk();
+    }
 
     function worldClass(n) {
       if (n <= 15) return "world1";
@@ -458,10 +558,41 @@
       }
     }
 
+    function createPlayers(count) {
+      const basePlayers = [
+        { name: "Jugador 1", pos: 1, cls: "p1" },
+        { name: "Jugador 2", pos: 1, cls: "p2" },
+        { name: "Jugador 3", pos: 1, cls: "p3" },
+        { name: "Jugador 4", pos: 1, cls: "p4" }
+      ];
+      return basePlayers.slice(0, count);
+    }
+
+    function startGame(count) {
+      numberOfPlayers = count;
+      players = createPlayers(count);
+      currentPlayer = 0;
+      lives = 3;
+      coins = 0;
+      gameOver = false;
+      pendingAction = null;
+      document.getElementById("startScreen").style.display = "none";
+      document.getElementById("gameArea").style.display = "grid";
+      document.getElementById("dice").textContent = "🎲";
+      document.getElementById("log").innerHTML = "";
+      showCard("🕹️", "Partida iniciada", `Jugarán ${count} jugadores. Lancen el dado para comenzar.`);
+      log(`Partida iniciada con ${count} jugadores.`);
+      render();
+    }
+
     function render() {
       document.getElementById("lives").textContent = lives;
       document.getElementById("coins").textContent = coins;
       document.getElementById("turn").textContent = gameOver ? "Juego terminado" : `Turno: ${players[currentPlayer].name}`;
+      document.getElementById("rollButton").disabled = gameOver || !!pendingAction;
+      document.getElementById("okButton").disabled = gameOver || !pendingAction;
+      document.getElementById("noButton").disabled = gameOver || !pendingAction;
+      document.getElementById("pendingNote").style.display = pendingAction ? "block" : "none";
 
       const playersBox = document.getElementById("players");
       playersBox.innerHTML = players.map((p, idx) => `
@@ -482,43 +613,51 @@
     }
 
     function rollDice() {
-      if (gameOver) return;
+      if (gameOver || pendingAction) return;
+      soundDice();
       const dice = Math.floor(Math.random() * 6) + 1;
-      lastDice = dice;
       document.getElementById("dice").textContent = `🎲 ${dice}`;
       log(`${players[currentPlayer].name} sacó ${dice}.`);
-      movePlayer(currentPlayer, dice, true);
+      movePlayer(currentPlayer, dice, false);
       checkCell(players[currentPlayer].pos);
-      if (!gameOver) nextTurn();
       render();
     }
 
-    function movePlayer(index, steps, fromDice = false) {
+    function bonusReroll() {
+      pendingAction = null;
+      log("Dado mágico activado. El mismo jugador puede lanzar nuevamente.");
+      showCard("🎲", "Lanza otra vez", "Presiona el botón de dado para lanzar nuevamente.");
+      render();
+    }
+
+    function movePlayer(index, steps, shouldRender = true) {
       const old = players[index].pos;
       players[index].pos = Math.max(1, Math.min(maxCell, players[index].pos + steps));
       log(`${players[index].name} va de ${old} a ${players[index].pos}.`);
-      if (players[index].pos >= maxCell) {
-        drawCard("jefe");
+      if (players[index].pos >= maxCell && !gameOver) {
+        prepareCard("jefe");
       }
-      if (!fromDice) render();
+      if (shouldRender) render();
     }
 
     function moveAll(steps) {
-      players.forEach((_, idx) => movePlayer(idx, steps));
+      players.forEach((_, idx) => movePlayer(idx, steps, false));
+      render();
     }
 
     function moveLastPlayer(steps) {
       let minPos = Math.min(...players.map(p => p.pos));
       let idx = players.findIndex(p => p.pos === minPos);
-      movePlayer(idx, steps);
+      movePlayer(idx, steps, true);
     }
 
     function moveToNextPortal() {
       const portals = [29, 53];
       const current = players[currentPlayer].pos;
       const next = portals.find(p => p > current) || 53;
+      const old = players[currentPlayer].pos;
       players[currentPlayer].pos = next;
-      log(`${players[currentPlayer].name} viaja al portal ${next}.`);
+      log(`${players[currentPlayer].name} viaja del ${old} al portal ${next}.`);
       render();
     }
 
@@ -539,45 +678,87 @@
       log(`El equipo pierde 1 vida. Quedan ${lives}.`);
       if (lives <= 0) {
         gameOver = true;
+        pendingAction = null;
+        soundNo();
         showCard("💔", "Fin del juego", "Se acabaron las vidas. Reinicien y vuelvan a intentarlo.");
       }
       render();
     }
 
+    function endTurn() {
+      if (gameOver) return;
+      currentPlayer = (currentPlayer + 1) % numberOfPlayers;
+      render();
+    }
+
     function checkCell(pos) {
       const data = specialCells[pos];
-      if (!data) {
+      if (!data || data[1] === "SALIDA") {
         showCard("🙂", "Casilla normal", "No ocurre nada. Sigue el próximo jugador.");
+        endTurn();
         return;
       }
 
       const label = data[1];
-      if (label === "Moneda") addCoins(1);
-      else if (label === "Desafío") drawCard("desafio");
-      else if (label === "Avanza") movePlayer(currentPlayer, 2);
-      else if (label === "Bonus") drawCard("bonus");
-      else if (label === "Duelo") drawCard("duelo");
-      else if (label === "Retrocede") movePlayer(currentPlayer, -2);
-      else if (label === "Ayuda") drawCard("ayuda");
-      else if (label === "Sorpresa") drawRandomAny();
-      else if (label === "Trampa") drawCard("trampa");
-      else if (label === "Portal") moveToNextPortal();
-      else if (label === "Seguro") showCard("🛡️", "Casilla segura", "Están protegidos. No ocurre nada malo.");
-      else if (label === "JEFE") drawCard("jefe");
+      if (label === "Moneda") prepareSimpleAction("🪙", "Moneda", "Presiona ✅ para ganar 1 moneda.", () => addCoins(1), () => log("Moneda no tomada."));
+      else if (label === "Desafío") prepareCard("desafio");
+      else if (label === "Avanza") prepareSimpleAction("⬆️", "Avanza", "Presiona ✅ para avanzar 2 casillas.", () => movePlayer(currentPlayer, 2), () => log("Avance cancelado."));
+      else if (label === "Bonus") prepareCard("bonus");
+      else if (label === "Duelo") prepareCard("duelo");
+      else if (label === "Retrocede") prepareSimpleAction("⬇️", "Retrocede", "Presiona ✅ para retroceder 2 casillas. Presiona ❌ si usan protección.", () => movePlayer(currentPlayer, -2), () => log("Retroceso evitado."));
+      else if (label === "Ayuda") prepareCard("ayuda");
+      else if (label === "Sorpresa") prepareRandomAny();
+      else if (label === "Trampa") prepareCard("trampa");
+      else if (label === "Portal") prepareSimpleAction("🌀", "Portal", "Presiona ✅ para viajar al siguiente portal.", () => moveToNextPortal(), () => log("Portal no usado."));
+      else if (label === "Seguro") prepareSimpleAction("🛡️", "Casilla segura", "Presiona ✅ para continuar. Están protegidos.", () => log("Casilla segura completada."), () => log("Continúan sin usar la casilla segura."));
+      else if (label === "JEFE") prepareCard("jefe");
     }
 
-    function drawRandomAny() {
+    function prepareSimpleAction(icon, title, text, onOk, onNo) {
+      soundCard();
+      showCard(icon, title, text);
+      pendingAction = { onOk, onNo, keepTurn: false };
+      render();
+    }
+
+    function prepareRandomAny() {
       const types = ["desafio", "bonus", "trampa", "duelo", "ayuda", "power"];
       const type = types[Math.floor(Math.random() * types.length)];
-      drawCard(type);
+      prepareCard(type);
     }
 
-    function drawCard(type) {
+    function prepareCard(type) {
+      soundCard();
       const list = cards[type];
       const card = list[Math.floor(Math.random() * list.length)];
       showCard(card[0], card[1], card[2]);
       log(`Carta: ${card[1]}.`);
-      card[3]();
+      pendingAction = {
+        onOk: card[3],
+        onNo: card[4],
+        keepTurn: card[1] === "Dado Mágico"
+      };
+      render();
+    }
+
+    function resolvePending(success) {
+      if (!pendingAction || gameOver) return;
+      const action = pendingAction;
+      pendingAction = null;
+
+      if (success) {
+        soundOk();
+        log("Acción confirmada con ✅.");
+        action.onOk();
+      } else {
+        soundNo();
+        log("Acción marcada con ❌.");
+        action.onNo();
+      }
+
+      if (!gameOver && !action.keepTurn) {
+        endTurn();
+      }
       render();
     }
 
@@ -590,35 +771,54 @@
     }
 
     function duel(successNumber, rewardFn, successText) {
+      soundDice();
       const dice = Math.floor(Math.random() * 6) + 1;
+      document.getElementById("dice").textContent = `⚔️ ${dice}`;
       log(`Duelo: salió ${dice}.`);
       if (dice >= successNumber) {
+        soundOk();
         log(successText);
         rewardFn();
       } else {
+        soundNo();
         log("No ganaron el duelo. No pasa nada grave.");
       }
     }
 
     function shadowDuel() {
+      soundDice();
       const dice = Math.floor(Math.random() * 6) + 1;
+      document.getElementById("dice").textContent = `⚔️ ${dice}`;
       log(`Duelo contra sombra: salió ${dice}.`);
-      if (dice <= 2) movePlayer(currentPlayer, -1);
-      else addCoins(1);
+      if (dice <= 2) {
+        soundNo();
+        movePlayer(currentPlayer, -1);
+      } else {
+        soundOk();
+        addCoins(1);
+      }
     }
 
     function enemyHidden() {
+      soundDice();
       const dice = Math.floor(Math.random() * 6) + 1;
+      document.getElementById("dice").textContent = `⚠️ ${dice}`;
       log(`Enemigo escondido: salió ${dice}.`);
       if (dice <= 3) loseLife();
-      else log("El equipo esquiva al enemigo.");
+      else {
+        soundOk();
+        log("El equipo esquiva al enemigo.");
+      }
     }
 
     function finalBoss() {
+      soundDice();
       const dice = Math.floor(Math.random() * 6) + 1;
+      document.getElementById("dice").textContent = `👾 ${dice}`;
       log(`Tirada contra Jefe Final: salió ${dice}.`);
       if (dice >= 4) {
         gameOver = true;
+        soundWin();
         showCard("🏆", "¡Victoria Pixel!", "El equipo venció al Jefe Final. Todos ganan la partida.");
       } else {
         loseLife();
@@ -626,28 +826,31 @@
       }
     }
 
-    function nextTurn() {
-      currentPlayer = (currentPlayer + 1) % numberOfPlayers;
-    }
-
     function useCoins(action) {
-      if (gameOver) return;
+      if (gameOver || pendingAction) {
+        if (pendingAction) log("Primero deben resolver la acción pendiente con ✅ o ❌.");
+        return;
+      }
       if (action === "reroll") {
         if (coins >= 3) {
           coins -= 3;
-          log("Usaron 3 monedas. Pueden lanzar el dado nuevamente.");
+          soundOk();
+          log("Usaron 3 monedas. El mismo jugador puede lanzar nuevamente.");
           render();
         } else {
+          soundNo();
           log("No tienen suficientes monedas para repetir el dado.");
         }
       }
       if (action === "life") {
         if (coins >= 5) {
           coins -= 5;
+          soundOk();
           addLife(1);
           log("Usaron 5 monedas para recuperar 1 vida.");
           render();
         } else {
+          soundNo();
           log("No tienen suficientes monedas para recuperar vida.");
         }
       }
@@ -661,17 +864,13 @@
     }
 
     function resetGame() {
-      players = [
-        { name: "Jugador 1", pos: 1, cls: "p1" },
-        { name: "Jugador 2", pos: 1, cls: "p2" },
-        { name: "Jugador 3", pos: 1, cls: "p3" },
-        { name: "Jugador 4", pos: 1, cls: "p4" }
-      ];
+      soundOk();
+      players = createPlayers(numberOfPlayers);
       currentPlayer = 0;
       lives = 3;
       coins = 0;
       gameOver = false;
-      lastDice = null;
+      pendingAction = null;
       document.getElementById("dice").textContent = "🎲";
       document.getElementById("log").innerHTML = "";
       showCard("🕹️", "Listos para jugar", "Lancen el dado, avancen por el tablero y lleguen juntos al Jefe Final Pixel.");
@@ -679,7 +878,6 @@
     }
 
     initBoard();
-    render();
   </script>
 </body>
 </html>
