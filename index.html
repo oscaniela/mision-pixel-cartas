@@ -3,174 +3,683 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Misión Pixel - Cartas Digitales</title>
+  <title>Misión Pixel - Juego Digital</title>
   <style>
+    :root {
+      --bg1: #7dd3fc;
+      --bg2: #fef3c7;
+      --ink: #1f2937;
+      --card: #ffffff;
+      --green: #86efac;
+      --yellow: #fde047;
+      --blue: #67e8f9;
+      --red: #fca5a5;
+      --purple: #c4b5fd;
+      --pink: #f9a8d4;
+      --orange: #fdba74;
+      --gray: #e5e7eb;
+    }
+
+    * { box-sizing: border-box; }
+
     body {
-      font-family: Arial, sans-serif;
-      background: linear-gradient(180deg, #7dd3fc, #fef3c7);
       margin: 0;
-      padding: 20px;
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(180deg, var(--bg1), var(--bg2));
+      color: var(--ink);
+      min-height: 100vh;
+    }
+
+    header {
       text-align: center;
-      color: #1f2937;
+      padding: 18px 12px 10px;
     }
 
     h1 {
-      font-size: 32px;
-      margin-bottom: 5px;
+      margin: 0;
+      font-size: clamp(28px, 5vw, 46px);
     }
 
-    h2 {
-      font-size: 20px;
-      font-weight: normal;
-      margin-top: 0;
+    .subtitle {
+      margin: 6px 0 0;
+      font-size: 16px;
     }
 
-    .buttons {
+    .layout {
       display: grid;
-      grid-template-columns: 1fr;
-      gap: 12px;
-      max-width: 420px;
-      margin: 25px auto;
+      grid-template-columns: 1fr 360px;
+      gap: 18px;
+      padding: 14px;
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    .panel, .board-wrap {
+      background: rgba(255,255,255,0.88);
+      border: 4px solid var(--ink);
+      border-radius: 24px;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.18);
+      padding: 14px;
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(10, minmax(42px, 1fr));
+      gap: 7px;
+    }
+
+    .cell {
+      min-height: 62px;
+      border: 3px solid #374151;
+      border-radius: 14px;
+      background: #fff;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 5px;
+      overflow: hidden;
+    }
+
+    .cell .num {
+      font-weight: 800;
+      font-size: 13px;
+      text-align: left;
+      z-index: 2;
+    }
+
+    .cell .icon {
+      font-size: 24px;
+      text-align: center;
+      line-height: 1;
+      z-index: 2;
+    }
+
+    .cell .label {
+      font-size: 10px;
+      font-weight: 800;
+      text-align: center;
+      z-index: 2;
+    }
+
+    .world1 { background: #bbf7d0; }
+    .world2 { background: #d9f99d; }
+    .world3 { background: #bae6fd; }
+    .world4 { background: #fed7aa; }
+
+    .start { background: #a7f3d0; }
+    .finish { background: #fdba74; }
+
+    .tokens {
+      position: absolute;
+      bottom: 4px;
+      right: 4px;
+      display: flex;
+      gap: 2px;
+      flex-wrap: wrap;
+      max-width: 90%;
+      z-index: 3;
+    }
+
+    .token {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid #111827;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .p1 { background: #ef4444; }
+    .p2 { background: #3b82f6; }
+    .p3 { background: #22c55e; }
+    .p4 { background: #a855f7; }
+
+    .status-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .status-box {
+      background: var(--card);
+      border: 3px solid var(--ink);
+      border-radius: 18px;
+      padding: 10px;
+      text-align: center;
+      font-weight: 800;
+    }
+
+    .turn {
+      background: var(--yellow);
+      border: 3px solid var(--ink);
+      border-radius: 18px;
+      padding: 12px;
+      text-align: center;
+      margin-bottom: 12px;
+      font-weight: 800;
     }
 
     button {
-      font-size: 18px;
-      padding: 14px;
-      border: none;
+      width: 100%;
+      border: 3px solid var(--ink);
       border-radius: 16px;
+      padding: 12px;
+      font-size: 16px;
+      font-weight: 800;
       cursor: pointer;
-      font-weight: bold;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      box-shadow: 0 4px 0 rgba(0,0,0,0.25);
+      margin-bottom: 10px;
     }
 
-    .desafio { background: #fde047; }
-    .bonus { background: #67e8f9; }
-    .trampa { background: #fca5a5; }
-    .duelo { background: #c4b5fd; }
-    .ayuda { background: #f9a8d4; }
-    .power { background: #86efac; }
-    .jefe { background: #fdba74; }
-
-    .card {
-      max-width: 420px;
-      margin: 25px auto;
-      background: white;
-      border-radius: 24px;
-      padding: 25px;
-      box-shadow: 0 6px 16px rgba(0,0,0,0.25);
-      border: 5px solid #1f2937;
+    button:active {
+      transform: translateY(2px);
+      box-shadow: 0 2px 0 rgba(0,0,0,0.25);
     }
 
-    .icon {
+    .primary { background: var(--green); }
+    .secondary { background: var(--blue); }
+    .danger { background: var(--red); }
+
+    .dice {
       font-size: 48px;
+      text-align: center;
+      background: white;
+      border: 3px solid var(--ink);
+      border-radius: 20px;
+      padding: 12px;
+      margin-bottom: 12px;
     }
 
-    .card h3 {
-      font-size: 26px;
-      margin: 10px 0;
+    .card-result {
+      background: white;
+      border: 4px solid var(--ink);
+      border-radius: 22px;
+      padding: 16px;
+      min-height: 160px;
+      margin-top: 12px;
     }
 
-    .card p {
-      font-size: 20px;
-      line-height: 1.4;
+    .card-result .big {
+      font-size: 42px;
+      text-align: center;
     }
 
-    .footer {
-      margin-top: 30px;
+    .card-result h3 {
+      text-align: center;
+      font-size: 24px;
+      margin: 8px 0;
+    }
+
+    .card-result p {
+      text-align: center;
+      font-size: 17px;
+      line-height: 1.35;
+      margin: 0;
+    }
+
+    .log {
+      background: #f9fafb;
+      border: 3px solid var(--ink);
+      border-radius: 18px;
+      padding: 10px;
+      height: 140px;
+      overflow-y: auto;
       font-size: 14px;
+      margin-top: 12px;
+    }
+
+    .players {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .player {
+      background: white;
+      border: 3px solid var(--ink);
+      border-radius: 16px;
+      padding: 8px;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .active { outline: 5px solid #facc15; }
+
+    .rules {
+      max-width: 1280px;
+      margin: 0 auto 24px;
+      padding: 0 14px;
+    }
+
+    .rules details {
+      background: rgba(255,255,255,0.88);
+      border: 4px solid var(--ink);
+      border-radius: 20px;
+      padding: 12px 16px;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.18);
+    }
+
+    .rules summary {
+      font-weight: 900;
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+      .board { grid-template-columns: repeat(6, minmax(42px, 1fr)); }
+      .cell { min-height: 60px; }
+    }
+
+    @media (max-width: 520px) {
+      .board { grid-template-columns: repeat(5, minmax(42px, 1fr)); }
+      .cell { min-height: 58px; }
+      .cell .icon { font-size: 20px; }
+      .layout { padding: 8px; }
     }
   </style>
 </head>
 <body>
+  <header>
+    <h1>🎮 Misión Pixel</h1>
+    <p class="subtitle">Juego cooperativo digital para 2 a 4 jugadores</p>
+  </header>
 
-  <h1>🎮 Misión Pixel</h1>
-  <h2>Cartas Digitales</h2>
+  <main class="layout">
+    <section class="board-wrap">
+      <div id="board" class="board"></div>
+    </section>
 
-  <div class="buttons">
-    <button class="desafio" onclick="sacarCarta('desafio')">❓ Sacar Desafío</button>
-    <button class="bonus" onclick="sacarCarta('bonus')">⭐ Sacar Bonus</button>
-    <button class="trampa" onclick="sacarCarta('trampa')">⚠️ Sacar Trampa</button>
-    <button class="duelo" onclick="sacarCarta('duelo')">⚔️ Sacar Duelo</button>
-    <button class="ayuda" onclick="sacarCarta('ayuda')">❤️ Sacar Ayuda</button>
-    <button class="power" onclick="sacarCarta('power')">🛡️ Sacar Power-Up</button>
-    <button class="jefe" onclick="sacarCarta('jefe')">👾 Sacar Jefe Final</button>
-  </div>
+    <aside class="panel">
+      <div class="status-grid">
+        <div class="status-box">❤️ Vidas<br><span id="lives">3</span></div>
+        <div class="status-box">🪙 Monedas<br><span id="coins">0</span></div>
+      </div>
 
-  <div id="resultado" class="card">
-    <div class="icon">🎲</div>
-    <h3>Elige un tipo de carta</h3>
-    <p>Presiona un botón para sacar una carta aleatoria.</p>
-  </div>
+      <div id="turn" class="turn">Turno: Jugador 1</div>
 
-  <div class="footer">
-    Juego cooperativo familiar desde 4 años.
-  </div>
+      <div id="players" class="players"></div>
+
+      <div id="dice" class="dice">🎲</div>
+      <button class="primary" onclick="rollDice()">Lanzar dado</button>
+      <button class="secondary" onclick="useCoins('reroll')">Usar 3 monedas: repetir dado</button>
+      <button class="secondary" onclick="useCoins('life')">Usar 5 monedas: recuperar vida</button>
+      <button class="danger" onclick="resetGame()">Reiniciar juego</button>
+
+      <div id="card" class="card-result">
+        <div class="big">🕹️</div>
+        <h3>Listos para jugar</h3>
+        <p>Lancen el dado, avancen por el tablero y lleguen juntos al Jefe Final Pixel.</p>
+      </div>
+
+      <div id="log" class="log"></div>
+    </aside>
+  </main>
+
+  <section class="rules">
+    <details>
+      <summary>Reglas rápidas</summary>
+      <p><strong>Objetivo:</strong> llegar a la casilla 60 y vencer al Jefe Final Pixel.</p>
+      <p><strong>Cooperativo:</strong> todos juegan como equipo. Si ganan, ganan todos.</p>
+      <p><strong>Vidas:</strong> el equipo comienza con 3 vidas. Si llegan a 0, pierden la partida.</p>
+      <p><strong>Monedas:</strong> 3 monedas permiten repetir el dado. 5 monedas permiten recuperar 1 vida.</p>
+      <p><strong>Meta:</strong> basta con llegar o pasar la casilla 60.</p>
+    </details>
+  </section>
 
   <script>
-    const cartas = {
+    const numberOfPlayers = 4;
+    const maxCell = 60;
+
+    let players = [
+      { name: "Jugador 1", pos: 1, cls: "p1" },
+      { name: "Jugador 2", pos: 1, cls: "p2" },
+      { name: "Jugador 3", pos: 1, cls: "p3" },
+      { name: "Jugador 4", pos: 1, cls: "p4" }
+    ];
+
+    let currentPlayer = 0;
+    let lives = 3;
+    let coins = 0;
+    let gameOver = false;
+    let lastDice = null;
+
+    const specialCells = {
+      1: ["🎮", "SALIDA", "start"],
+      3: ["🪙", "Moneda", ""],
+      5: ["❓", "Desafío", ""],
+      7: ["⬆️", "Avanza", ""],
+      9: ["⭐", "Bonus", ""],
+      11: ["⚔️", "Duelo", ""],
+      13: ["⬇️", "Retrocede", ""],
+      15: ["❤️", "Ayuda", ""],
+      17: ["🎁", "Sorpresa", ""],
+      19: ["⬆️", "Avanza", ""],
+      21: ["⚠️", "Trampa", ""],
+      23: ["❓", "Desafío", ""],
+      25: ["⭐", "Bonus", ""],
+      27: ["⚔️", "Duelo", ""],
+      29: ["🌀", "Portal", ""],
+      31: ["🪙", "Moneda", ""],
+      33: ["⬇️", "Retrocede", ""],
+      35: ["❓", "Desafío", ""],
+      37: ["⬆️", "Avanza", ""],
+      39: ["❤️", "Ayuda", ""],
+      41: ["⚠️", "Trampa", ""],
+      43: ["⭐", "Bonus", ""],
+      45: ["⚔️", "Duelo", ""],
+      47: ["🛡️", "Seguro", ""],
+      49: ["❓", "Desafío", ""],
+      51: ["⬆️", "Avanza", ""],
+      53: ["🎁", "Sorpresa", ""],
+      55: ["❤️", "Ayuda", ""],
+      57: ["⚔️", "Duelo", ""],
+      58: ["⭐", "Bonus", ""],
+      59: ["❓", "Desafío", ""],
+      60: ["👾", "JEFE", "finish"]
+    };
+
+    const cards = {
       desafio: [
-        ["❓", "Robot Pixel", "Imita a un Alien y ganan 1 moneda."],
-        ["❓", "Sonido Secreto", "Haz un sonido de videojuego. Si alguien lo reconoce, avancen 1 casilla."],
-        ["❓", "Animal Misterioso", "Imita un animal sin hablar. Si el equipo adivina, ganan 1 moneda."],
-        ["❓", "Héroe Inventado", "Inventa el nombre de un héroe pixelado. Si todos lo aprueban, ganan 1 estrella."],
-        ["❓", "Dibujo Invisible", "Dibuja una figura en el aire. Si alguien adivina, avancen 1 casilla."],
-        ["❓", "Adivinanza Estrella", "Brillo en el cielo y también en los juegos. ¿Qué soy? Respuesta: estrella."],
-        ["❓", "Objeto Secreto", "Da una pista sobre un objeto de la casa. Si alguien adivina, ganan 1 moneda."],
-        ["❓", "Salto de Plataforma", "Actúa como si saltaras un obstáculo. Si lo haces, el equipo avanza 1 casilla."]
+        ["❓", "Robot Pixel", "Imita a un robot. Si el equipo adivina, ganan 1 moneda.", () => addCoins(1)],
+        ["❓", "Sonido Secreto", "Haz un sonido de videojuego. Si alguien lo reconoce, avancen 1 casilla.", () => movePlayer(currentPlayer, 1)],
+        ["❓", "Animal Misterioso", "Imita un animal sin hablar. Si el equipo adivina, ganan 1 moneda.", () => addCoins(1)],
+        ["❓", "Héroe Inventado", "Inventa el nombre de un héroe pixelado. Si todos lo aprueban, ganan 1 estrella/moneda.", () => addCoins(1)],
+        ["❓", "Dibujo Invisible", "Dibuja una figura en el aire. Si alguien adivina, avancen 1 casilla.", () => movePlayer(currentPlayer, 1)],
+        ["❓", "Adivinanza Estrella", "Brillo en el cielo y también en los juegos. ¿Qué soy? Respuesta: estrella. Si aciertan, ganan 1 moneda.", () => addCoins(1)],
+        ["❓", "Objeto Secreto", "Da una pista sobre un objeto de la casa. Si alguien adivina, ganan 1 moneda.", () => addCoins(1)],
+        ["❓", "Salto de Plataforma", "Actúa como si saltaras un obstáculo. Si lo haces, el equipo avanza 1 casilla.", () => movePlayer(currentPlayer, 1)]
       ],
-
       bonus: [
-        ["⭐", "Súper Salto", "Avanza 3 casillas."],
-        ["⭐", "Moneda Dorada", "El equipo gana 2 monedas."],
-        ["⭐", "Estrella Brillante", "Todos los jugadores avanzan 1 casilla."],
-        ["⭐", "Dado Mágico", "Lanza el dado otra vez."],
-        ["⭐", "Portal Secreto", "Avanza hasta la siguiente casilla de portal."],
-        ["⭐", "Turbo Pixel", "El jugador que va más atrás avanza 3 casillas."]
+        ["⭐", "Súper Salto", "Avanza 3 casillas.", () => movePlayer(currentPlayer, 3)],
+        ["⭐", "Moneda Dorada", "El equipo gana 2 monedas.", () => addCoins(2)],
+        ["⭐", "Estrella Brillante", "Todos los jugadores avanzan 1 casilla.", () => moveAll(1)],
+        ["⭐", "Dado Mágico", "Lanza el dado otra vez.", () => log("Puedes lanzar otra vez en este turno.")],
+        ["⭐", "Portal Secreto", "Avanza hasta la siguiente casilla de portal.", () => moveToNextPortal()],
+        ["⭐", "Turbo Pixel", "El jugador que va más atrás avanza 3 casillas.", () => moveLastPlayer(3)]
       ],
-
       trampa: [
-        ["⚠️", "Nube Traviesa", "Retrocede 2 casillas."],
-        ["⚠️", "Bloque Roto", "El equipo pierde 1 moneda."],
-        ["⚠️", "Camino Resbaloso", "En tu próximo turno, avanza solo 1 casilla."],
-        ["⚠️", "Enemigo Escondido", "Lanza el dado. Si sale 1, 2 o 3, el equipo pierde 1 vida."]
+        ["⚠️", "Nube Traviesa", "Retrocede 2 casillas.", () => movePlayer(currentPlayer, -2)],
+        ["⚠️", "Bloque Roto", "El equipo pierde 1 moneda.", () => addCoins(-1)],
+        ["⚠️", "Camino Resbaloso", "Retrocede 1 casilla.", () => movePlayer(currentPlayer, -1)],
+        ["⚠️", "Enemigo Escondido", "Lanza automática: si sale 1, 2 o 3, el equipo pierde 1 vida.", () => enemyHidden()]
       ],
-
       duelo: [
-        ["⚔️", "Monstruo Verde", "Lanza el dado. Si sale 4, 5 o 6, ganan 1 moneda."],
-        ["⚔️", "Robot Guardián", "Lanza el dado. Si sale 5 o 6, avanza 2 casillas."],
-        ["⚔️", "Sombra Pixelada", "Lanza el dado. Si sale 1 o 2, retrocede 1 casilla. Si sale 3 a 6, ganas 1 moneda."],
-        ["⚔️", "Mini Jefe", "Lanza el dado. Si sale 6, el equipo recupera 1 vida. Si no, no pasa nada."]
+        ["⚔️", "Monstruo Verde", "Duelo automático: con 4, 5 o 6 ganan 1 moneda.", () => duel(4, () => addCoins(1), "Ganaron 1 moneda.")],
+        ["⚔️", "Robot Guardián", "Duelo automático: con 5 o 6 avanzan 2 casillas.", () => duel(5, () => movePlayer(currentPlayer, 2), "Avanzan 2 casillas.")],
+        ["⚔️", "Sombra Pixelada", "Duelo automático: con 1 o 2 retrocedes 1. Con 3 a 6 ganas 1 moneda.", () => shadowDuel()],
+        ["⚔️", "Mini Jefe", "Duelo automático: si sale 6, recuperan 1 vida.", () => duel(6, () => addLife(1), "Recuperan 1 vida.")]
       ],
-
       ayuda: [
-        ["❤️", "Todos Juntos", "El jugador que va más atrás avanza 3 casillas."],
-        ["❤️", "Corazón Extra", "El equipo recupera 1 vida."],
-        ["❤️", "Mano Amiga", "Elige a otro jugador. Ambos avanzan 2 casillas."],
-        ["❤️", "Equipo Unido", "El equipo gana 1 moneda por cada jugador."]
+        ["❤️", "Todos Juntos", "El jugador que va más atrás avanza 3 casillas.", () => moveLastPlayer(3)],
+        ["❤️", "Corazón Extra", "El equipo recupera 1 vida.", () => addLife(1)],
+        ["❤️", "Mano Amiga", "El jugador actual y el más atrasado avanzan 2 casillas.", () => { movePlayer(currentPlayer, 2); moveLastPlayer(2); }],
+        ["❤️", "Equipo Unido", "El equipo gana 1 moneda por cada jugador.", () => addCoins(numberOfPlayers)]
       ],
-
       power: [
-        ["🛡️", "Botas Veloces", "Guarda esta carta. En tu próximo turno, avanza +2 casillas."],
-        ["🛡️", "Escudo Protector", "Guarda esta carta. Sirve para evitar una trampa."],
-        ["🛡️", "Llave Pixelada", "Guarda esta carta. Sirve para abrir el portal más cercano y avanzar hasta él."]
+        ["🛡️", "Botas Veloces", "Avanza 2 casillas extra.", () => movePlayer(currentPlayer, 2)],
+        ["🛡️", "Escudo Protector", "Evitan una trampa y ganan 1 moneda.", () => addCoins(1)],
+        ["🛡️", "Llave Pixelada", "Avanza hasta el portal más cercano.", () => moveToNextPortal()]
       ],
-
       jefe: [
-        ["👾", "Jefe Final Pixel", "Para ganar, superen 2 de 3 retos: una adivinanza, una imitación creativa y sacar 4, 5 o 6 en el dado."]
+        ["👾", "Jefe Final Pixel", "Reto final: hagan una adivinanza, una imitación creativa y luego saquen 4, 5 o 6 en el dado. Si superan 2 de 3, ganan.", () => finalBoss()]
       ]
     };
 
-    function sacarCarta(tipo) {
-      const lista = cartas[tipo];
-      const carta = lista[Math.floor(Math.random() * lista.length)];
+    function worldClass(n) {
+      if (n <= 15) return "world1";
+      if (n <= 30) return "world2";
+      if (n <= 45) return "world3";
+      return "world4";
+    }
 
-      document.getElementById("resultado").innerHTML = `
-        <div class="icon">${carta[0]}</div>
-        <h3>${carta[1]}</h3>
-        <p>${carta[2]}</p>
+    function initBoard() {
+      const board = document.getElementById("board");
+      board.innerHTML = "";
+      for (let i = 1; i <= maxCell; i++) {
+        const cell = document.createElement("div");
+        const data = specialCells[i] || ["", "", ""];
+        cell.className = `cell ${worldClass(i)} ${data[2]}`;
+        cell.id = `cell-${i}`;
+        cell.innerHTML = `
+          <div class="num">${i}</div>
+          <div class="icon">${data[0]}</div>
+          <div class="label">${data[1]}</div>
+          <div class="tokens" id="tokens-${i}"></div>
+        `;
+        board.appendChild(cell);
+      }
+    }
+
+    function render() {
+      document.getElementById("lives").textContent = lives;
+      document.getElementById("coins").textContent = coins;
+      document.getElementById("turn").textContent = gameOver ? "Juego terminado" : `Turno: ${players[currentPlayer].name}`;
+
+      const playersBox = document.getElementById("players");
+      playersBox.innerHTML = players.map((p, idx) => `
+        <div class="player ${idx === currentPlayer && !gameOver ? 'active' : ''}">
+          <span class="token ${p.cls}">${idx + 1}</span><br>${p.name}<br>Casilla ${p.pos}
+        </div>
+      `).join("");
+
+      for (let i = 1; i <= maxCell; i++) {
+        document.getElementById(`tokens-${i}`).innerHTML = "";
+      }
+      players.forEach((p, idx) => {
+        const token = document.createElement("span");
+        token.className = `token ${p.cls}`;
+        token.textContent = idx + 1;
+        document.getElementById(`tokens-${p.pos}`).appendChild(token);
+      });
+    }
+
+    function rollDice() {
+      if (gameOver) return;
+      const dice = Math.floor(Math.random() * 6) + 1;
+      lastDice = dice;
+      document.getElementById("dice").textContent = `🎲 ${dice}`;
+      log(`${players[currentPlayer].name} sacó ${dice}.`);
+      movePlayer(currentPlayer, dice, true);
+      checkCell(players[currentPlayer].pos);
+      if (!gameOver) nextTurn();
+      render();
+    }
+
+    function movePlayer(index, steps, fromDice = false) {
+      const old = players[index].pos;
+      players[index].pos = Math.max(1, Math.min(maxCell, players[index].pos + steps));
+      log(`${players[index].name} va de ${old} a ${players[index].pos}.`);
+      if (players[index].pos >= maxCell) {
+        drawCard("jefe");
+      }
+      if (!fromDice) render();
+    }
+
+    function moveAll(steps) {
+      players.forEach((_, idx) => movePlayer(idx, steps));
+    }
+
+    function moveLastPlayer(steps) {
+      let minPos = Math.min(...players.map(p => p.pos));
+      let idx = players.findIndex(p => p.pos === minPos);
+      movePlayer(idx, steps);
+    }
+
+    function moveToNextPortal() {
+      const portals = [29, 53];
+      const current = players[currentPlayer].pos;
+      const next = portals.find(p => p > current) || 53;
+      players[currentPlayer].pos = next;
+      log(`${players[currentPlayer].name} viaja al portal ${next}.`);
+      render();
+    }
+
+    function addCoins(amount) {
+      coins = Math.max(0, coins + amount);
+      log(amount >= 0 ? `El equipo gana ${amount} moneda(s).` : `El equipo pierde ${Math.abs(amount)} moneda(s).`);
+      render();
+    }
+
+    function addLife(amount) {
+      lives = Math.min(5, lives + amount);
+      log(`Vidas del equipo: ${lives}.`);
+      render();
+    }
+
+    function loseLife() {
+      lives -= 1;
+      log(`El equipo pierde 1 vida. Quedan ${lives}.`);
+      if (lives <= 0) {
+        gameOver = true;
+        showCard("💔", "Fin del juego", "Se acabaron las vidas. Reinicien y vuelvan a intentarlo.");
+      }
+      render();
+    }
+
+    function checkCell(pos) {
+      const data = specialCells[pos];
+      if (!data) {
+        showCard("🙂", "Casilla normal", "No ocurre nada. Sigue el próximo jugador.");
+        return;
+      }
+
+      const label = data[1];
+      if (label === "Moneda") addCoins(1);
+      else if (label === "Desafío") drawCard("desafio");
+      else if (label === "Avanza") movePlayer(currentPlayer, 2);
+      else if (label === "Bonus") drawCard("bonus");
+      else if (label === "Duelo") drawCard("duelo");
+      else if (label === "Retrocede") movePlayer(currentPlayer, -2);
+      else if (label === "Ayuda") drawCard("ayuda");
+      else if (label === "Sorpresa") drawRandomAny();
+      else if (label === "Trampa") drawCard("trampa");
+      else if (label === "Portal") moveToNextPortal();
+      else if (label === "Seguro") showCard("🛡️", "Casilla segura", "Están protegidos. No ocurre nada malo.");
+      else if (label === "JEFE") drawCard("jefe");
+    }
+
+    function drawRandomAny() {
+      const types = ["desafio", "bonus", "trampa", "duelo", "ayuda", "power"];
+      const type = types[Math.floor(Math.random() * types.length)];
+      drawCard(type);
+    }
+
+    function drawCard(type) {
+      const list = cards[type];
+      const card = list[Math.floor(Math.random() * list.length)];
+      showCard(card[0], card[1], card[2]);
+      log(`Carta: ${card[1]}.`);
+      card[3]();
+      render();
+    }
+
+    function showCard(icon, title, text) {
+      document.getElementById("card").innerHTML = `
+        <div class="big">${icon}</div>
+        <h3>${title}</h3>
+        <p>${text}</p>
       `;
     }
-  </script>
 
+    function duel(successNumber, rewardFn, successText) {
+      const dice = Math.floor(Math.random() * 6) + 1;
+      log(`Duelo: salió ${dice}.`);
+      if (dice >= successNumber) {
+        log(successText);
+        rewardFn();
+      } else {
+        log("No ganaron el duelo. No pasa nada grave.");
+      }
+    }
+
+    function shadowDuel() {
+      const dice = Math.floor(Math.random() * 6) + 1;
+      log(`Duelo contra sombra: salió ${dice}.`);
+      if (dice <= 2) movePlayer(currentPlayer, -1);
+      else addCoins(1);
+    }
+
+    function enemyHidden() {
+      const dice = Math.floor(Math.random() * 6) + 1;
+      log(`Enemigo escondido: salió ${dice}.`);
+      if (dice <= 3) loseLife();
+      else log("El equipo esquiva al enemigo.");
+    }
+
+    function finalBoss() {
+      const dice = Math.floor(Math.random() * 6) + 1;
+      log(`Tirada contra Jefe Final: salió ${dice}.`);
+      if (dice >= 4) {
+        gameOver = true;
+        showCard("🏆", "¡Victoria Pixel!", "El equipo venció al Jefe Final. Todos ganan la partida.");
+      } else {
+        loseLife();
+        if (!gameOver) showCard("👾", "El jefe resiste", "Perdieron 1 vida. Pueden intentarlo nuevamente al llegar otro turno.");
+      }
+    }
+
+    function nextTurn() {
+      currentPlayer = (currentPlayer + 1) % numberOfPlayers;
+    }
+
+    function useCoins(action) {
+      if (gameOver) return;
+      if (action === "reroll") {
+        if (coins >= 3) {
+          coins -= 3;
+          log("Usaron 3 monedas. Pueden lanzar el dado nuevamente.");
+          render();
+        } else {
+          log("No tienen suficientes monedas para repetir el dado.");
+        }
+      }
+      if (action === "life") {
+        if (coins >= 5) {
+          coins -= 5;
+          addLife(1);
+          log("Usaron 5 monedas para recuperar 1 vida.");
+          render();
+        } else {
+          log("No tienen suficientes monedas para recuperar vida.");
+        }
+      }
+    }
+
+    function log(message) {
+      const box = document.getElementById("log");
+      const item = document.createElement("div");
+      item.textContent = `• ${message}`;
+      box.prepend(item);
+    }
+
+    function resetGame() {
+      players = [
+        { name: "Jugador 1", pos: 1, cls: "p1" },
+        { name: "Jugador 2", pos: 1, cls: "p2" },
+        { name: "Jugador 3", pos: 1, cls: "p3" },
+        { name: "Jugador 4", pos: 1, cls: "p4" }
+      ];
+      currentPlayer = 0;
+      lives = 3;
+      coins = 0;
+      gameOver = false;
+      lastDice = null;
+      document.getElementById("dice").textContent = "🎲";
+      document.getElementById("log").innerHTML = "";
+      showCard("🕹️", "Listos para jugar", "Lancen el dado, avancen por el tablero y lleguen juntos al Jefe Final Pixel.");
+      render();
+    }
+
+    initBoard();
+    render();
+  </script>
 </body>
 </html>
