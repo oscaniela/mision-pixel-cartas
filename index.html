@@ -40,7 +40,7 @@
     .board {
       width:100%; height:100%;
       display:grid;
-      grid-template-columns:repeat(10,1fr);
+      grid-template-columns:repeat(11,1fr);
       grid-template-rows:repeat(6,1fr);
       gap:5px;
     }
@@ -60,7 +60,7 @@
     .cell .icon { font-size:clamp(16px,2.1vw,25px); text-align:center; line-height:1; z-index:2; }
     .cell .label { font-size:clamp(7px,.75vw,10px); font-weight:900; text-align:center; z-index:2; line-height:1; }
     .world1{background:#bbf7d0}.world2{background:#d9f99d}.world3{background:#bae6fd}.world4{background:#fed7aa}
-    .start{background:#a7f3d0}.finish{background:#fdba74}
+    .start{background:#a7f3d0}.finish{background:#fdba74}.minion{background:#f5d0fe}
     .tokens{position:absolute;bottom:2px;right:2px;display:flex;gap:1px;flex-wrap:wrap;max-width:90%;z-index:3}
     .token{width:16px;height:16px;border-radius:50%;border:2px solid #111827;display:inline-flex;align-items:center;justify-content:center;color:white;font-size:9px;font-weight:900}
     .p1{background:#ef4444}.p2{background:#3b82f6}.p3{background:#22c55e}.p4{background:#a855f7}
@@ -140,7 +140,7 @@
       <div class="status-grid">
         <div class="status-box">❤️ Vidas<br><span id="lives">3</span></div>
         <div class="status-box">🪙 Monedas<br><span id="coins">0</span></div>
-        <div class="status-box">👾 Enemigo<br><span id="bossLives">2</span></div>
+        <div class="status-box">👾 Jefe<br><span id="bossLives">2</span></div>
       </div>
       <div id="turn" class="turn">Turno: Jugador 1</div>
       <div id="players" class="players"></div>
@@ -173,21 +173,40 @@
     let currentPlayer = 0, lives = 3, coins = 0, bossLives = 2;
     let gameOver = false, pendingAction = null, pendingDiceAction = null;
     let soundEnabled = true, audioCtx = null;
+    let defeatedMinions = new Set();
+    const minionCells = [14, 28, 42, 56];
 
     const specialCells = {
-      1:["🎮","SALIDA","start"],3:["🪙","Moneda",""] ,5:["❓","Desafío",""] ,7:["⬆️","Avanza",""] ,9:["⭐","Bonus",""] ,11:["⚔️","Duelo",""] ,13:["⬇️","Retrocede",""] ,15:["❤️","Ayuda",""] ,17:["🎁","Sorpresa",""] ,19:["⬆️","Avanza",""] ,21:["⚠️","Trampa",""] ,23:["❓","Desafío",""] ,25:["⭐","Bonus",""] ,27:["⚔️","Duelo",""] ,29:["🌀","Portal",""] ,31:["🪙","Moneda",""] ,33:["⬇️","Retrocede",""] ,35:["❓","Desafío",""] ,37:["⬆️","Avanza",""] ,39:["❤️","Ayuda",""] ,41:["⚠️","Trampa",""] ,43:["⭐","Bonus",""] ,45:["⚔️","Duelo",""] ,47:["🛡️","Seguro",""] ,49:["❓","Desafío",""] ,51:["⬆️","Avanza",""] ,53:["🎁","Sorpresa",""] ,55:["❤️","Ayuda",""] ,57:["⚔️","Duelo",""] ,58:["⭐","Bonus",""] ,59:["❓","Desafío",""] ,60:["👾","JEFE","finish"]
+      0:["🎮","SALIDA","start"],
+      3:["🪙","Moneda",""] ,5:["❓","Desafío",""] ,7:["⬆️","Avanza",""] ,9:["⭐","Bonus",""] ,11:["⚔️","Duelo",""] ,13:["⬇️","Retrocede",""] ,14:["👹","Súbdito","minion"] ,15:["❤️","Ayuda",""] ,17:["🎁","Sorpresa",""] ,19:["⬆️","Avanza",""] ,21:["⚠️","Trampa",""] ,23:["❓","Desafío",""] ,25:["⭐","Bonus",""] ,27:["⚔️","Duelo",""] ,28:["👹","Súbdito","minion"] ,29:["🌀","Portal",""] ,31:["🪙","Moneda",""] ,33:["⬇️","Retrocede",""] ,35:["❓","Desafío",""] ,37:["⬆️","Avanza",""] ,39:["❤️","Ayuda",""] ,41:["⚠️","Trampa",""] ,42:["👹","Súbdito","minion"] ,43:["⭐","Bonus",""] ,45:["⚔️","Duelo",""] ,49:["❓","Desafío",""] ,51:["⬆️","Avanza",""] ,53:["🎁","Sorpresa",""] ,55:["❤️","Ayuda",""] ,56:["👹","Súbdito","minion"] ,57:["⚔️","Duelo",""] ,58:["⭐","Bonus",""] ,59:["❓","Desafío",""] ,60:["👾","JEFE","finish"]
     };
 
     const cards = {
       desafio:[
-        ["❓","Robot Pixel","Imita a un robot. Si el equipo adivina, presionen ✅ y ganan 1 moneda.",()=>addCoins(1),()=>log("Desafío no completado.")],
+        ["❓","Canción de la Mosca","Canta la canción de la mosca de Cachureos. Si lo haces, presionen ✅ y ganan 1 moneda.",()=>addCoins(1),()=>log("Desafío no completado.")],
         ["❓","Sonido Secreto","Haz un sonido de videojuego. Si alguien lo reconoce, presionen ✅ y avancen 1 casilla.",()=>movePlayer(currentPlayer,1),()=>log("Desafío no completado.")],
         ["❓","Animal Misterioso","Imita un animal sin hablar. Si el equipo adivina, presionen ✅ y ganan 1 moneda.",()=>addCoins(1),()=>log("Desafío no completado.")],
         ["❓","Héroe Inventado","Inventa el nombre de un héroe pixelado. Si todos lo aprueban, presionen ✅ y ganan 1 moneda.",()=>addCoins(1),()=>log("Desafío no completado.")],
         ["❓","Dibujo Invisible","Dibuja una figura en el aire. Si alguien adivina, presionen ✅ y avancen 1 casilla.",()=>movePlayer(currentPlayer,1),()=>log("Desafío no completado.")],
-        ["❓","Adivinanza Estrella","Brillo en el cielo y también en los juegos. ¿Qué soy? Si responden estrella, presionen ✅ y ganan 1 moneda.",()=>addCoins(1),()=>log("Respuesta incorrecta.")],
+        ["❓","Adivinanza Libre","Di una adivinanza. Si alguien acierta, presionen ✅ y ganan 1 moneda.",()=>addCoins(1),()=>log("Nadie acertó la adivinanza.")],
         ["❓","Objeto Secreto","Da una pista sobre un objeto de la casa. Si alguien adivina, presionen ✅ y ganan 1 moneda.",()=>addCoins(1),()=>log("Desafío no completado.")],
-        ["❓","Salto de Plataforma","Actúa como si saltaras un obstáculo. Si lo haces, presionen ✅ y avancen 1 casilla.",()=>movePlayer(currentPlayer,1),()=>log("Desafío no completado.")]
+        ["❓","Salto de Plataforma","Actúa como si saltaras un obstáculo. Si lo haces, presionen ✅ y avancen 1 casilla.",()=>movePlayer(currentPlayer,1),()=>log("Desafío no completado.")],
+        ["❓","Gato Juanito","Canta la canción del Gato Juanito. Si lo haces, presionen ✅ y ganan 1 moneda.",()=>addCoins(1),()=>log("Desafío no completado.")],
+        ["❓","Waka Waka","Canta o baila un pedacito de Waka Waka. Si lo haces, presionen ✅ y avancen 1 casilla.",()=>movePlayer(currentPlayer,1),()=>log("Desafío no completado.")],
+        ["❓","Bloque en el Aire","Imita a Mario destruyendo un bloque en el aire. Si lo haces, presionen ✅ y ganan 1 moneda.",()=>addCoins(1),()=>log("Desafío no completado.")],
+        ["❓","Personajes de Cuento","Hagan hasta 10 preguntas para adivinar un personaje de cuento. Si lo adivinan, presionen ✅ y ganan 1 moneda.",()=>addCoins(1),()=>log("No lograron adivinar el personaje.")],
+        ["❓","Adivina el Animal","Da pistas para que el equipo adivine un animal. Si aciertan, presionen ✅ y ganan 1 moneda.",()=>addCoins(1),()=>log("No lograron adivinar el animal.")],
+        ["❓","Color de la Fruta","Pregunta el color de una fruta, por ejemplo: ¿de qué color es la frutilla? Si responden bien, presionen ✅ y ganan 1 moneda.",()=>addCoins(1),()=>log("Respuesta incorrecta.")],
+        ["❓","Personaje de Hielo","Adivina el personaje: tiene poderes de hielo, vive en un reino nevado y canta una canción muy famosa. Si aciertan, presionen ✅ y ganan 1 moneda.",()=>addCoins(1),()=>log("No lograron adivinar el personaje.")],
+        ["❓","Vaquero de Juguete","Adivina el personaje: usa sombrero, es un juguete, tiene amigos muy queridos y siempre quiere cuidar a su dueño. Si aciertan, presionen ✅ y ganan 1 moneda.",()=>addCoins(1),()=>log("No lograron adivinar el personaje.")],
+        ["❓","Pez Perdido","Adivina el personaje: es pequeño, vive en el mar, tiene una aleta más corta y su papá lo busca en una gran aventura. Si aciertan, presionen ✅ y ganan 1 moneda.",()=>addCoins(1),()=>log("No lograron adivinar el personaje.")],
+        ["❓","León Valiente","Adivina el personaje: es un cachorro de león, vive una gran aventura y debe aprender a ser rey. Si aciertan, presionen ✅ y avanzan 1 casilla.",()=>movePlayer(currentPlayer,1),()=>log("No lograron adivinar el personaje.")],
+        ["❓","Tres Cosas Rojas","Nombra 3 cosas de color rojo. Si lo logras, presionen ✅ y ganan 1 moneda.",()=>addCoins(1),()=>log("Desafío no completado.")],
+        ["❓","Tres Cosas Azules","Nombra 3 cosas de color azul. Si lo logras, presionen ✅ y ganan 1 moneda.",()=>addCoins(1),()=>log("Desafío no completado.")],
+        ["❓","Tres Cosas Amarillas","Nombra 3 cosas de color amarillo. Si lo logras, presionen ✅ y ganan 1 moneda.",()=>addCoins(1),()=>log("Desafío no completado.")],
+        ["❓","Tres Cosas Verdes","Nombra 3 cosas de color verde. Si lo logras, presionen ✅ y ganan 1 moneda.",()=>addCoins(1),()=>log("Desafío no completado.")],
+        ["❓","Canción en Inglés","Canta una canción corta en inglés. Si lo haces, presionen ✅ y avanzan 1 casilla.",()=>movePlayer(currentPlayer,1),()=>log("Desafío no completado.")],
+        ["❓","Palabra en Inglés","Di 3 palabras en inglés que conozcas. Si lo logras, presionen ✅ y ganan 1 moneda.",()=>addCoins(1),()=>log("Desafío no completado.")]
       ],
       bonus:[
         ["⭐","Súper Salto","Presiona ✅ para avanzar 3 casillas.",()=>movePlayer(currentPlayer,3),()=>log("Bonus cancelado.")],
@@ -220,25 +239,26 @@
         ["🛡️","Escudo Protector","Presiona ✅ para ganar 1 moneda y considerar que evitaron una trampa.",()=>addCoins(1),()=>log("Power-Up cancelado.")],
         ["🛡️","Llave Pixelada","Presiona ✅ para avanzar hasta el portal más cercano.",()=>moveToNextPortal(),()=>log("Power-Up cancelado.")]
       ],
-      jefe:[["👾","Jefe Final Pixel","El enemigo tiene 2 vidas. Presiona ✅ y luego Lanzar dado. Con 4, 5 o 6 le quitan 1 vida. Si fallan, el equipo pierde 1 vida.",()=>armDiceAction("👾 Lanzar contra jefe", finalBossRoll),()=>{loseLife(); if(!gameOver) showCard("👾","El jefe resiste","No superaron el reto final. Pierden 1 vida.");}]]
+      jefe:[["👾","Jefe Final Pixel","El jefe tiene 2 vidas. Presiona ✅ y luego Lanzar dado. Solo con 1 o 6 le quitan 1 vida. Con otro número pierden 1 vida y retroceden 10 casillas.",()=>armDiceAction("👾 Lanzar contra jefe", finalBossRoll),()=>{loseLife(); movePlayer(currentPlayer,-10); if(!gameOver) showCard("👾","El jefe resiste","No superaron el reto final. Pierden 1 vida y retroceden 10 casillas.");}]]
     };
 
     function createPlayers(count){return [
-      {name:"Jugador 1",pos:1,cls:"p1"},{name:"Jugador 2",pos:1,cls:"p2"},{name:"Jugador 3",pos:1,cls:"p3"},{name:"Jugador 4",pos:1,cls:"p4"}
+      {name:"Jugador 1",pos:0,cls:"p1"},{name:"Jugador 2",pos:0,cls:"p2"},{name:"Jugador 3",pos:0,cls:"p3"},{name:"Jugador 4",pos:0,cls:"p4"}
     ].slice(0,count)}
-    function startGame(count){numberOfPlayers=count; players=createPlayers(count); currentPlayer=0; lives=3; coins=0; bossLives=2; gameOver=false; pendingAction=null; pendingDiceAction=null; document.getElementById("startScreen").style.display="none"; document.getElementById("gameArea").style.display="grid"; document.getElementById("dice").textContent="🎲"; document.getElementById("log").innerHTML=""; showCard("🕹️","Partida iniciada",`Jugarán ${count} jugadores. Lancen el dado para comenzar.`); log(`Partida iniciada con ${count} jugadores.`); render()}
+    function startGame(count){numberOfPlayers=count; players=createPlayers(count); currentPlayer=0; lives=3; coins=0; bossLives=2; defeatedMinions=new Set(); gameOver=false; pendingAction=null; pendingDiceAction=null; document.getElementById("startScreen").style.display="none"; document.getElementById("gameArea").style.display="grid"; document.getElementById("dice").textContent="🎲"; document.getElementById("log").innerHTML=""; showCard("🕹️","Partida iniciada",`Jugarán ${count} jugadores. Todos comienzan en la casilla 0.`); log(`Partida iniciada con ${count} jugadores.`); initBoard(); render()}
     function worldClass(n){if(n<=15)return"world1";if(n<=30)return"world2";if(n<=45)return"world3";return"world4"}
-    function initBoard(){const board=document.getElementById("board"); board.innerHTML=""; for(let i=1;i<=maxCell;i++){const data=specialCells[i]||["","",""]; const cell=document.createElement("div"); cell.className=`cell ${worldClass(i)} ${data[2]}`; cell.id=`cell-${i}`; cell.innerHTML=`<div class="num">${i}</div><div class="icon">${data[0]}</div><div class="label">${data[1]}</div><div class="tokens" id="tokens-${i}"></div>`; board.appendChild(cell)}}
+    function initBoard(){const board=document.getElementById("board"); board.innerHTML=""; for(let i=0;i<=maxCell;i++){const raw=specialCells[i]||["","",""]; const defeated=defeatedMinions.has(i); const data=defeated?["✅","Vencido",""]:raw; const cell=document.createElement("div"); cell.className=`cell ${worldClass(i)} ${data[2]}`; cell.id=`cell-${i}`; cell.innerHTML=`<div class="num">${i}</div><div class="icon">${data[0]}</div><div class="label">${data[1]}</div><div class="tokens" id="tokens-${i}"></div>`; board.appendChild(cell)}}
+    function refreshBoardLabels(){minionCells.forEach(c=>{if(defeatedMinions.has(c)){const cell=document.getElementById(`cell-${c}`); if(cell){cell.querySelector('.icon').textContent='✅'; cell.querySelector('.label').textContent='Vencido'; cell.classList.remove('minion')}}})}
     function render(){document.getElementById("lives").textContent=lives; document.getElementById("coins").textContent=coins; document.getElementById("bossLives").textContent=bossLives; document.getElementById("turn").textContent=gameOver?"Juego terminado":`Turno: ${players[currentPlayer]?.name||"Jugador 1"}`; document.getElementById("rollButton").disabled=gameOver||!!pendingAction; document.getElementById("rollButton").textContent=pendingDiceAction?pendingDiceAction.label:"🎲 Lanzar dado"; document.getElementById("okButton").disabled=gameOver||!pendingAction; document.getElementById("noButton").disabled=gameOver||!pendingAction; document.getElementById("pendingNote").style.display=(pendingAction||pendingDiceAction)?"block":"none"; document.getElementById("pendingNote").textContent=pendingDiceAction?"Tirada especial pendiente: presiona Lanzar dado.":"Acción pendiente: confirma con ✅ o ❌.";
       document.getElementById("players").innerHTML=players.map((p,idx)=>`<div class="player ${idx===currentPlayer&&!gameOver?'active':''}"><span class="token ${p.cls}">${idx+1}</span><br>${p.name}<br>Casilla ${p.pos}</div>`).join("");
-      for(let i=1;i<=maxCell;i++) document.getElementById(`tokens-${i}`).innerHTML=""; players.forEach((p,idx)=>{const token=document.createElement("span"); token.className=`token ${p.cls}`; token.textContent=idx+1; document.getElementById(`tokens-${p.pos}`).appendChild(token)})}
+      for(let i=0;i<=maxCell;i++){const t=document.getElementById(`tokens-${i}`); if(t) t.innerHTML=""} players.forEach((p,idx)=>{const token=document.createElement("span"); token.className=`token ${p.cls}`; token.textContent=idx+1; document.getElementById(`tokens-${p.pos}`).appendChild(token)}); refreshBoardLabels()}
 
     function rollDice(){if(gameOver||pendingAction)return; if(pendingDiceAction){resolveDiceAction(); return;} soundDice(); const dice=randomDice(); document.getElementById("dice").textContent=`🎲 ${dice}`; log(`${players[currentPlayer].name} sacó ${dice}.`); movePlayer(currentPlayer,dice,false); checkCell(players[currentPlayer].pos); render()}
     function armDiceAction(label, resolver){pendingDiceAction={label,resolver}; pendingAction=null; showCard("🎲","Tirada especial","Presiona el botón de dado para resolver la acción."); render()}
     function resolveDiceAction(){if(!pendingDiceAction)return; soundDice(); const action=pendingDiceAction; pendingDiceAction=null; const dice=randomDice(); document.getElementById("dice").textContent=`🎲 ${dice}`; action.resolver(dice); if(!gameOver) endTurn(); render()}
     function randomDice(){return Math.floor(Math.random()*6)+1}
 
-    function movePlayer(index,steps,shouldRender=true){const old=players[index].pos; players[index].pos=Math.max(1,Math.min(maxCell,players[index].pos+steps)); log(`${players[index].name} va de ${old} a ${players[index].pos}.`); if(players[index].pos>=maxCell&&!gameOver) prepareCard("jefe"); if(shouldRender)render()}
+    function movePlayer(index,steps,shouldRender=true){const old=players[index].pos; players[index].pos=Math.max(0,Math.min(maxCell,players[index].pos+steps)); log(`${players[index].name} va de ${old} a ${players[index].pos}.`); if(players[index].pos>=maxCell&&!gameOver) prepareCard("jefe"); if(shouldRender)render()}
     function moveAll(steps){players.forEach((_,idx)=>movePlayer(idx,steps,false)); render()}
     function moveLastPlayer(steps){let minPos=Math.min(...players.map(p=>p.pos)); let idx=players.findIndex(p=>p.pos===minPos); movePlayer(idx,steps,true)}
     function moveToNextPortal(){const portals=[29,53]; const current=players[currentPlayer].pos; const next=portals.find(p=>p>current)||53; const old=players[currentPlayer].pos; players[currentPlayer].pos=next; log(`${players[currentPlayer].name} viaja del ${old} al portal ${next}.`); render()}
@@ -252,8 +272,9 @@
       else if(label==="Desafío") prepareCard("desafio"); else if(label==="Avanza") prepareSimpleAction("⬆️","Avanza","Presiona ✅ para avanzar 2 casillas.",()=>movePlayer(currentPlayer,2),()=>log("Avance cancelado."));
       else if(label==="Bonus") prepareCard("bonus"); else if(label==="Duelo") prepareCard("duelo"); else if(label==="Retrocede") prepareSimpleAction("⬇️","Retrocede","Presiona ✅ para retroceder 2 casillas. Presiona ❌ si usan protección.",()=>movePlayer(currentPlayer,-2),()=>log("Retroceso evitado."));
       else if(label==="Ayuda") prepareCard("ayuda"); else if(label==="Sorpresa") prepareRandomAny(); else if(label==="Trampa") prepareCard("trampa"); else if(label==="Portal") prepareSimpleAction("🌀","Portal","Presiona ✅ para viajar al siguiente portal.",()=>moveToNextPortal(),()=>log("Portal no usado."));
-      else if(label==="Seguro") prepareSimpleAction("🛡️","Casilla segura","Presiona ✅ para continuar. Están protegidos.",()=>log("Casilla segura completada."),()=>log("Continúan sin usar la casilla segura.")); else if(label==="JEFE") prepareCard("jefe")}
+      else if(label==="Súbdito") prepareMinion(pos); else if(label==="JEFE") prepareCard("jefe")}
     function prepareSimpleAction(icon,title,text,onOk,onNo){soundCard(); showCard(icon,title,text); pendingAction={onOk,onNo,keepTurn:false}; render()}
+    function prepareMinion(cell){if(defeatedMinions.has(cell)){showCard("✅","Súbdito vencido","Este súbdito ya desapareció. Sigue el próximo jugador."); endTurn(); return} soundCard(); showCard("👹","Súbdito del Jefe","Tiene 1 vida. Presiona ✅ y luego Lanzar dado. Con 4, 5 o 6 lo derrotas. Si gana el súbdito, pierden 1 vida, pero desaparece igual."); pendingAction={onOk:()=>armDiceAction("👹 Lanzar contra súbdito",(dice)=>minionRoll(dice,cell)),onNo:()=>log("Evitaron enfrentar al súbdito."),keepTurn:false}; render()}
     function prepareRandomAny(){const types=["desafio","bonus","trampa","duelo","ayuda","power"]; prepareCard(types[Math.floor(Math.random()*types.length)])}
     function prepareCard(type){soundCard(); const list=cards[type]; const card=list[Math.floor(Math.random()*list.length)]; showCard(card[0],card[1],card[2]); log(`Carta: ${card[1]}.`); pendingAction={onOk:card[3],onNo:card[4],keepTurn:card[1]==="Dado Mágico"}; render()}
     function resolvePending(success){if(!pendingAction||gameOver)return; const action=pendingAction; pendingAction=null; if(success){soundOk(); log("Acción confirmada con ✅."); action.onOk()} else {soundNo(); log("Acción marcada con ❌."); action.onNo()} if(!gameOver&&!action.keepTurn&&!pendingDiceAction) endTurn(); render()}
@@ -262,12 +283,13 @@
     function duelRoll(diceNeeded,rewardFn,successText){const dice=parseInt(document.getElementById("dice").textContent.replace(/\D/g,""),10)||randomDice(); log(`Duelo: salió ${dice}.`); if(dice>=diceNeeded){soundOk(); log(successText); rewardFn()} else {soundNo(); log("No ganaron el duelo. No pasa nada grave.")}}
     function shadowDuelRoll(dice){log(`Duelo contra sombra: salió ${dice}.`); if(dice<=2){soundNo(); movePlayer(currentPlayer,-1)} else {soundOk(); addCoins(1)}}
     function enemyHiddenRoll(dice){log(`Enemigo escondido: salió ${dice}.`); if(dice<=3) loseLife(); else {soundOk(); log("El equipo esquiva al enemigo.")}}
-    function finalBossRoll(dice){log(`Tirada contra Jefe Final: salió ${dice}.`); if(dice>=4){bossLives-=1; soundOk(); if(bossLives<=0){gameOver=true; soundWin(); showCard("🏆","¡Victoria Pixel!","Le quitaron sus 2 vidas al Jefe Final. Todos ganan la partida.")} else {showCard("👾","¡Buen golpe!",`Le quitaron 1 vida al jefe. Le queda ${bossLives} vida.`); prepareCard("jefe")}} else {soundNo(); loseLife(); if(!gameOver) showCard("👾","El jefe resiste","Fallaron la tirada. El equipo pierde 1 vida.")} render()}
+    function minionRoll(dice,cell){log(`Súbdito en casilla ${cell}: salió ${dice}.`); if(dice>=4){soundOk(); log("Derrotaron al súbdito. El súbdito desaparece."); showCard("✅","Súbdito derrotado","Ganaron el combate. El súbdito desaparece del tablero.")} else {soundNo(); loseLife(); if(!gameOver) showCard("👹","El súbdito ganó","El equipo pierde 1 vida, pero el súbdito desaparece del tablero.")} defeatedMinions.add(cell); render()}
+    function finalBossRoll(dice){log(`Tirada contra Jefe Final: salió ${dice}.`); if(dice===1||dice===6){bossLives-=1; soundOk(); if(bossLives<=0){gameOver=true; soundWin(); showCard("🏆","¡Victoria Pixel!","Le quitaron sus 2 vidas al Jefe Final. Todos ganan la partida.")} else {showCard("👾","¡Golpe crítico!",`Sacaron ${dice}. Le quitaron 1 vida al jefe. Le queda ${bossLives} vida.`); prepareCard("jefe")}} else {soundNo(); loseLife(); movePlayer(currentPlayer,-10); if(!gameOver) showCard("👾","El jefe contraataca","No salió 1 ni 6. Pierden 1 vida y retroceden 10 casillas.")} render()}
 
     function useCoins(action){if(gameOver||pendingAction||pendingDiceAction){log("Primero deben resolver la acción pendiente."); return} if(action==="reroll"){if(coins>=3){coins-=3; soundOk(); log("Usaron 3 monedas. El mismo jugador puede lanzar nuevamente."); render()}else{soundNo(); log("No tienen suficientes monedas para repetir el dado.")}} if(action==="life"){if(coins>=5){coins-=5; soundOk(); addLife(1); log("Usaron 5 monedas para recuperar 1 vida."); render()}else{soundNo(); log("No tienen suficientes monedas para recuperar vida.")}}}
     function showCard(icon,title,text){document.getElementById("card").innerHTML=`<div class="big">${icon}</div><h3>${title}</h3><p>${text}</p>`}
     function log(message){const box=document.getElementById("log"); const item=document.createElement("div"); item.textContent=`• ${message}`; box.prepend(item)}
-    function resetGame(){soundOk(); players=createPlayers(numberOfPlayers); currentPlayer=0; lives=3; coins=0; bossLives=2; gameOver=false; pendingAction=null; pendingDiceAction=null; document.getElementById("dice").textContent="🎲"; document.getElementById("log").innerHTML=""; showCard("🕹️","Partida reiniciada","Lancen el dado, avancen por el tablero y lleguen juntos al Jefe Final Pixel."); render()}
+    function resetGame(){soundOk(); players=createPlayers(numberOfPlayers); currentPlayer=0; lives=3; coins=0; bossLives=2; defeatedMinions=new Set(); gameOver=false; pendingAction=null; pendingDiceAction=null; document.getElementById("dice").textContent="🎲"; document.getElementById("log").innerHTML=""; showCard("🕹️","Partida reiniciada","Todos vuelven a la casilla 0. Lancen el dado para comenzar."); initBoard(); render()}
 
     function ensureAudio(){if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)()}
     function beep(freq=440,duration=.08,type="sine",volume=.08){if(!soundEnabled)return; ensureAudio(); const osc=audioCtx.createOscillator(); const gain=audioCtx.createGain(); osc.type=type; osc.frequency.value=freq; gain.gain.value=volume; osc.connect(gain); gain.connect(audioCtx.destination); osc.start(); gain.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+duration); osc.stop(audioCtx.currentTime+duration)}
