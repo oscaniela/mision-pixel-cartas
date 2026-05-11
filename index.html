@@ -1,663 +1,106 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Misión Pixel - Juego Digital</title>
-  <style>
-    :root{
-      --ink:#172033;--paper:#ffffff;--sky:#7dd3fc;--sun:#fef3c7;--green:#86efac;--yellow:#fde047;--blue:#67e8f9;--red:#fca5a5;--purple:#c4b5fd;--pink:#f9a8d4;--orange:#fdba74;--gold:#facc15;--gray:#e5e7eb;--darkgray:#6b7280;
-    }
-    *{box-sizing:border-box} html,body{width:100%;height:100%;margin:0;overflow:hidden;font-family:Arial,Helvetica,sans-serif;color:var(--ink)}
-    body{background:linear-gradient(180deg,var(--sky),var(--sun))}
-    header{height:6vh;min-height:42px;text-align:center;padding:6px 10px 2px} h1{margin:0;font-size:clamp(21px,3vw,34px);line-height:1}.subtitle{margin:3px 0 0;font-size:12px}
-    #startScreen{height:94vh;padding:8px;display:flex;justify-content:center;align-items:center;overflow:auto}.setup-box{width:min(1060px,96vw);max-height:92vh;overflow:auto;background:rgba(255,255,255,.94);border:3px solid var(--ink);border-radius:22px;box-shadow:0 8px 18px rgba(0,0,0,.18);padding:16px}.setup-box h2{margin:0 0 8px;text-align:center;font-size:28px}.setup-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.setup-section{border:2px solid var(--ink);border-radius:18px;padding:12px;background:#fff}.setup-section h3{margin:0 0 8px;font-size:18px}.count-buttons{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.player-config{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:8px 0;padding:8px;border:2px dashed #9ca3af;border-radius:14px}.player-config input,.player-config select{width:100%;padding:9px;border:2px solid var(--ink);border-radius:12px;font-weight:800}.villains{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.villain-card{border:2px solid var(--ink);border-radius:14px;padding:8px;background:#fff;cursor:pointer;text-align:center;font-weight:900}.villain-card.selected{outline:5px solid var(--gold);background:#fff7ed}.setup-error{color:#b91c1c;font-weight:900;text-align:center;min-height:18px}.start-btn{font-size:18px;padding:12px;margin-top:10px}
-    .layout{height:94vh;display:grid;grid-template-columns:minmax(0,1fr) 390px;gap:8px;padding:6px;max-width:1480px;margin:0 auto}.panel,.board-wrap{background:rgba(255,255,255,.9);border:3px solid var(--ink);border-radius:20px;box-shadow:0 6px 14px rgba(0,0,0,.16)}.board-wrap{height:100%;padding:7px;display:flex;align-items:stretch}.board{width:100%;height:100%;display:grid;grid-template-columns:repeat(11,1fr);grid-template-rows:repeat(6,1fr);gap:4px}.cell{min-width:0;min-height:0;border:2px solid #374151;border-radius:12px;position:relative;display:flex;flex-direction:column;justify-content:space-between;padding:3px;overflow:hidden;background:#fff}.cell .num{font-weight:900;font-size:clamp(8px,1vw,13px);line-height:1;z-index:2}.cell .icon{font-size:clamp(15px,2vw,24px);text-align:center;line-height:1;z-index:2}.cell .label{font-size:clamp(7px,.72vw,10px);font-weight:900;text-align:center;z-index:2;line-height:1}.world1{background:#dcfce7}.world2{background:#d9f99d}.world3{background:#bae6fd}.world4{background:#fed7aa}.start{background:#a7f3d0}.finish{background:#fdba74}.minion{background:#f5d0fe}.redcell{background:#fecaca}.coin-cell{background:#fde68a}.challenge{background:#fef08a}.bonuscell{background:#cffafe}.portalcell{background:#bfdbfe}.trapcell{background:#fca5a5}.help{background:#fbcfe8}.duelcell{background:#ddd6fe}.treasure{background:#fde68a}.blankCell{opacity:0;border:none;background:transparent}.tokens{position:absolute;bottom:2px;right:2px;display:flex;gap:1px;flex-wrap:wrap;max-width:95%;z-index:3}.token{width:18px;height:18px;border-radius:50%;border:2px solid #111827;display:inline-flex;align-items:center;justify-content:center;color:white;font-size:10px;font-weight:900}.dead-token{opacity:.35;filter:grayscale(1)}
-    .panel{height:100%;padding:7px;display:flex;flex-direction:column;min-height:0}.progress{height:16px;border:2px solid var(--ink);border-radius:999px;background:white;margin-bottom:5px;position:relative;overflow:hidden}.progress-fill{height:100%;background:linear-gradient(90deg,#86efac,#facc15,#fb923c);width:0%}.progress-label{position:absolute;inset:0;text-align:center;font-size:10px;font-weight:900;line-height:13px}.status-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:5px}.status-box{background:white;border:2px solid var(--ink);border-radius:13px;padding:5px;text-align:center;font-weight:900;font-size:12px;line-height:1.15}.turn{background:var(--yellow);border:2px solid var(--ink);border-radius:13px;padding:6px;text-align:center;margin-bottom:5px;font-weight:900;font-size:13px}.players{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:5px}.player{background:white;border:2px solid var(--ink);border-radius:13px;padding:5px;font-weight:900;text-align:center;font-size:11px;line-height:1.12}.player.dead{background:#d1d5db;color:#374151;opacity:.8}.active{outline:4px solid var(--gold)}.dice{font-size:32px;text-align:center;background:white;border:2px solid var(--ink);border-radius:16px;padding:5px;margin-bottom:5px;min-height:48px}button{width:100%;border:2px solid var(--ink);border-radius:13px;padding:7px;font-size:13px;font-weight:900;cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.25);margin-bottom:5px}button:disabled{opacity:.55;cursor:not-allowed}button:active:not(:disabled){transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.25)}.primary{background:var(--green)}.secondary{background:var(--blue)}.danger{background:var(--red)}.ok{background:#4ade80}.no{background:#fb7185}.neutral{background:#e5e7eb}.shop-title{text-align:center;font-weight:900;font-size:12px;margin:1px 0}.small-actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px}.small-actions button{font-size:11px;padding:5px}.pending-note{background:#fff7ed;border:2px dashed #9a3412;border-radius:13px;padding:5px;text-align:center;font-weight:900;margin-bottom:5px;display:none;font-size:11px}.card-result{flex:1;min-height:0;background:white;border:3px solid var(--ink);border-radius:18px;padding:8px;margin-top:2px;display:flex;flex-direction:column;justify-content:center;transition:background .2s}.card-result .big{font-size:32px;text-align:center;line-height:1}.card-result h3{text-align:center;font-size:clamp(16px,1.8vw,21px);margin:5px 0;line-height:1.05}.card-result p{text-align:center;font-size:clamp(12px,1.25vw,15px);line-height:1.22;margin:0}.card-challenge{background:#fef9c3}.card-bonus{background:#cffafe}.card-trap{background:#fee2e2}.card-duel{background:#ede9fe}.card-help{background:#fce7f3}.card-power{background:#dcfce7}.card-boss{background:#ffedd5}.action-buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}.action-buttons button{font-size:22px;padding:6px;margin-bottom:0}.log{background:#f9fafb;border:2px solid var(--ink);border-radius:14px;padding:6px;height:74px;overflow:auto;font-size:11px;margin-top:6px}.confetti{position:fixed;top:-10px;font-size:22px;animation:fall 1.8s linear forwards;z-index:99}@keyframes fall{to{transform:translateY(105vh) rotate(360deg);opacity:0}}@media(max-width:980px){header{display:none}.layout{height:100vh;grid-template-columns:1fr 340px;padding:4px}.board{gap:3px}.panel{padding:5px}.status-box,.turn,button{font-size:11px;padding:4px}.dice{font-size:26px;min-height:40px}.log{height:56px}.cell .label{display:none}}@media(max-width:760px){.layout{grid-template-columns:1fr 285px}.token{width:13px;height:13px;font-size:7px;border-width:1px}.player{font-size:9px}.card-result .big{font-size:24px}.card-result h3{font-size:15px}.card-result p{font-size:11px}.setup-grid{grid-template-columns:1fr}.villains{grid-template-columns:1fr}.player-config{grid-template-columns:1fr}}
-  
-
-    /* Tablet friendly layout */
-    @media (pointer: coarse) {
-      button,
-      .villain-card,
-      select,
-      input {
-        min-height: 44px;
-      }
-
-      button {
-        font-size: 15px;
-        padding: 9px;
-      }
-
-      .action-buttons button {
-        min-height: 52px;
-        font-size: 28px;
-      }
-    }
-
-    @media (min-width: 768px) and (max-width: 1180px) and (orientation: landscape) {
-      header {
-        height: 5vh;
-        min-height: 34px;
-        padding: 4px 8px 0;
-      }
-
-      h1 {
-        font-size: 24px;
-      }
-
-      .subtitle {
-        display: none;
-      }
-
-      .layout {
-        height: 95vh;
-        grid-template-columns: minmax(0, 1fr) 360px;
-        gap: 6px;
-        padding: 5px;
-      }
-
-      .board-wrap {
-        padding: 5px;
-      }
-
-      .board {
-        grid-template-columns: repeat(11, 1fr);
-        grid-template-rows: repeat(6, 1fr);
-        gap: 3px;
-      }
-
-      .cell {
-        border-width: 2px;
-        border-radius: 10px;
-        padding: 2px;
-      }
-
-      .cell .num {
-        font-size: 11px;
-      }
-
-      .cell .icon {
-        font-size: 22px;
-      }
-
-      .cell .label {
-        font-size: 8px;
-      }
-
-      .token {
-        width: 18px;
-        height: 18px;
-        font-size: 9px;
-      }
-
-      .panel {
-        padding: 6px;
-      }
-
-      .progress {
-        height: 15px;
-        margin-bottom: 4px;
-      }
-
-      .status-grid {
-        gap: 4px;
-        margin-bottom: 4px;
-      }
-
-      .status-box {
-        font-size: 11px;
-        padding: 4px;
-      }
-
-      .turn {
-        font-size: 12px;
-        padding: 5px;
-        margin-bottom: 4px;
-      }
-
-      .players {
-        gap: 4px;
-        margin-bottom: 4px;
-      }
-
-      .player {
-        font-size: 10px;
-        padding: 4px;
-      }
-
-      .dice {
-        font-size: 30px;
-        min-height: 46px;
-        padding: 5px;
-        margin-bottom: 4px;
-      }
-
-      button {
-        margin-bottom: 4px;
-        border-radius: 12px;
-      }
-
-      .shop-title {
-        font-size: 11px;
-        margin: 0 0 2px;
-      }
-
-      .small-actions {
-        gap: 4px;
-      }
-
-      .small-actions button {
-        font-size: 10px;
-        padding: 5px 3px;
-      }
-
-      .pending-note {
-        font-size: 10px;
-        padding: 4px;
-        margin-bottom: 4px;
-      }
-
-      .card-result {
-        padding: 7px;
-        border-radius: 16px;
-      }
-
-      .card-result .big {
-        font-size: 29px;
-      }
-
-      .card-result h3 {
-        font-size: 18px;
-        margin: 4px 0;
-      }
-
-      .card-result p {
-        font-size: 13px;
-        line-height: 1.18;
-      }
-
-      .action-buttons {
-        margin-top: 5px;
-        gap: 6px;
-      }
-
-      .action-buttons button {
-        min-height: 48px;
-        font-size: 26px;
-      }
-
-      .log {
-        height: 58px;
-        font-size: 10px;
-        margin-top: 5px;
-      }
-    }
-
-    @media (min-width: 768px) and (max-width: 1180px) and (orientation: portrait) {
-      html,
-      body {
-        overflow: auto;
-      }
-
-      header {
-        height: auto;
-        min-height: 0;
-        padding: 8px;
-      }
-
-      .layout {
-        height: auto;
-        min-height: 100vh;
-        grid-template-columns: 1fr;
-        grid-template-rows: auto auto;
-        padding: 8px;
-        gap: 8px;
-        overflow: visible;
-      }
-
-      .board-wrap {
-        height: 62vh;
-        min-height: 520px;
-        order: 2;
-      }
-
-      .panel {
-        order: 1;
-        height: auto;
-        min-height: 0;
-      }
-
-      .board {
-        grid-template-columns: repeat(8, 1fr);
-        grid-template-rows: repeat(9, 1fr);
-        gap: 5px;
-      }
-
-      .cell {
-        min-height: 58px;
-      }
-
-      .cell .icon {
-        font-size: 24px;
-      }
-
-      .cell .label {
-        font-size: 9px;
-      }
-
-      .players {
-        grid-template-columns: repeat(4, 1fr);
-      }
-
-      .player {
-        font-size: 12px;
-      }
-
-      .card-result {
-        min-height: 150px;
-      }
-
-      .log {
-        height: 90px;
-      }
-    }
-
-    @media (max-width: 760px) and (orientation: portrait) {
-      html,
-      body {
-        overflow: auto;
-      }
-
-      header {
-        display: block;
-        height: auto;
-        padding: 6px;
-      }
-
-      h1 {
-        font-size: 22px;
-      }
-
-      .subtitle {
-        display: none;
-      }
-
-      .layout {
-        height: auto;
-        min-height: 100vh;
-        grid-template-columns: 1fr;
-        padding: 6px;
-        gap: 6px;
-      }
-
-      .panel {
-        height: auto;
-        order: 1;
-      }
-
-      .board-wrap {
-        height: 70vh;
-        min-height: 520px;
-        order: 2;
-      }
-
-      .board {
-        grid-template-columns: repeat(6, 1fr);
-        grid-template-rows: repeat(11, 1fr);
-      }
-
-      .cell .label {
-        display: none;
-      }
-
-      .players {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-  
-    .help-overlay{
-      position:fixed;
-      inset:0;
-      background:rgba(15,23,42,.62);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      z-index:120;
-      padding:16px;
-    }
-    .help-modal{
-      width:min(920px,96vw);
-      max-height:88vh;
-      overflow:auto;
-      background:white;
-      border:4px solid var(--ink);
-      border-radius:24px;
-      box-shadow:0 12px 30px rgba(0,0,0,.35);
-      padding:18px;
-    }
-    .help-modal h2{
-      margin:0 0 10px;
-      text-align:center;
-      font-size:28px;
-    }
-    .help-modal h3{
-      margin:14px 0 6px;
-      font-size:18px;
-    }
-    .help-modal p,.help-modal li{
-      font-size:15px;
-      line-height:1.35;
-    }
-    .help-grid{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:12px;
-    }
-    .help-card{
-      border:2px solid var(--ink);
-      border-radius:16px;
-      background:#f9fafb;
-      padding:10px;
-    }
-    .help-table{
-      width:100%;
-      border-collapse:collapse;
-      font-size:14px;
-    }
-    .help-table td,.help-table th{
-      border:1px solid #cbd5e1;
-      padding:6px;
-      text-align:left;
-    }
-    .close-help{
-      position:sticky;
-      bottom:0;
-      margin-top:12px;
-      font-size:18px;
-      padding:12px;
-    }
-    @media(max-width:760px){
-      .help-grid{grid-template-columns:1fr}
-      .help-modal{padding:12px;max-height:92vh}
-      .help-modal h2{font-size:22px}
-      .help-modal p,.help-modal li{font-size:13px}
-    }
-  
-    .end-overlay{
-      position:fixed;
-      inset:0;
-      background:rgba(15,23,42,.68);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      z-index:140;
-      padding:16px;
-    }
-    .end-modal{
-      width:min(1040px,96vw);
-      max-height:90vh;
-      overflow:auto;
-      background:white;
-      border:4px solid var(--ink);
-      border-radius:24px;
-      box-shadow:0 12px 30px rgba(0,0,0,.38);
-      padding:18px;
-    }
-    .end-modal h2{
-      text-align:center;
-      margin:0 0 8px;
-      font-size:30px;
-    }
-    .end-summary{
-      text-align:center;
-      font-weight:900;
-      margin-bottom:12px;
-    }
-    .stats-grid{
-      display:grid;
-      grid-template-columns:repeat(2,1fr);
-      gap:10px;
-    }
-    .stat-card{
-      border:2px solid var(--ink);
-      border-radius:18px;
-      background:#f9fafb;
-      padding:10px;
-    }
-    .stat-card h3{
-      margin:0 0 8px;
-      font-size:18px;
-      display:flex;
-      align-items:center;
-      gap:6px;
-    }
-    .stat-row{
-      display:grid;
-      grid-template-columns:1fr auto;
-      gap:8px;
-      border-bottom:1px solid #d1d5db;
-      padding:4px 0;
-      font-size:13px;
-    }
-    .achievement-box{
-      border:3px solid var(--ink);
-      background:#fff7ed;
-      border-radius:18px;
-      padding:10px;
-      margin:10px 0;
-    }
-    .achievement-list{
-      display:grid;
-      grid-template-columns:repeat(2,1fr);
-      gap:6px;
-      font-weight:900;
-      font-size:13px;
-    }
-    @media(max-width:760px){
-      .stats-grid,.achievement-list{grid-template-columns:1fr}
-      .end-modal{padding:12px;max-height:92vh}
-      .end-modal h2{font-size:22px}
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Misión Pixel - Juego Digital</title>
+<style>
+:root{--ink:#172033;--paper:#fff;--sky:#7dd3fc;--sun:#fef3c7;--green:#86efac;--yellow:#fde047;--blue:#67e8f9;--red:#fca5a5;--purple:#c4b5fd;--pink:#f9a8d4;--orange:#fdba74;--gold:#facc15;--gray:#e5e7eb}
+*{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden;font-family:Arial,Helvetica,sans-serif;color:var(--ink)}body{background:linear-gradient(180deg,var(--sky),var(--sun))}header{height:6vh;min-height:42px;text-align:center;padding:6px 10px 2px}h1{margin:0;font-size:clamp(21px,3vw,34px);line-height:1}.subtitle{margin:3px 0 0;font-size:12px}
+button,.villain-card,select,input{touch-action:manipulation}button{width:100%;border:2px solid var(--ink);border-radius:13px;padding:7px;font-size:13px;font-weight:900;cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.25);margin-bottom:5px}button:disabled{opacity:.55;cursor:not-allowed}button:active:not(:disabled){transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.25)}.primary{background:var(--green)}.secondary{background:var(--blue)}.danger{background:var(--red)}.ok{background:#4ade80}.no{background:#fb7185}.neutral{background:#e5e7eb}
+#startScreen{height:94vh;padding:8px;display:flex;justify-content:center;align-items:center;overflow:auto}.setup-box{width:min(1120px,96vw);max-height:92vh;overflow:auto;background:rgba(255,255,255,.95);border:3px solid var(--ink);border-radius:22px;box-shadow:0 8px 18px rgba(0,0,0,.18);padding:14px}.setup-box h2{margin:0 0 8px;text-align:center;font-size:28px}.setup-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.setup-section{border:2px solid var(--ink);border-radius:18px;padding:10px;background:#fff}.setup-section h3{margin:0 0 7px;font-size:17px}.count-buttons,.difficulty-buttons{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.player-config{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin:7px 0;padding:7px;border:2px dashed #9ca3af;border-radius:14px}.player-config input,.player-config select{width:100%;padding:8px;border:2px solid var(--ink);border-radius:12px;font-weight:800}.villains{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}.villain-card{border:2px solid var(--ink);border-radius:14px;padding:7px;background:#fff;cursor:pointer;text-align:center;font-weight:900}.selected{outline:5px solid var(--gold)!important;background:#fff7ed!important}.setup-error{color:#b91c1c;font-weight:900;text-align:center;min-height:18px}.start-btn{font-size:18px;padding:12px;margin-top:10px}.ability-help{font-size:11px;line-height:1.15;margin-top:3px;color:#374151;font-weight:800}
+.layout{height:94vh;display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:7px;padding:5px;max-width:1500px;margin:0 auto}.panel,.board-wrap{background:rgba(255,255,255,.9);border:3px solid var(--ink);border-radius:20px;box-shadow:0 6px 14px rgba(0,0,0,.16)}.board-wrap{height:100%;padding:6px;display:flex;align-items:stretch}.board{width:100%;height:100%;display:grid;grid-template-columns:repeat(11,1fr);grid-template-rows:repeat(6,1fr);gap:4px}.cell{min-width:0;min-height:0;border:2px solid #374151;border-radius:12px;position:relative;display:flex;flex-direction:column;justify-content:space-between;padding:3px;overflow:hidden;background:#fff}.cell .num{font-weight:900;font-size:clamp(8px,1vw,13px);line-height:1;z-index:2}.cell .icon{font-size:clamp(15px,2vw,24px);text-align:center;line-height:1;z-index:2}.cell .label{font-size:clamp(7px,.72vw,10px);font-weight:900;text-align:center;z-index:2;line-height:1}.world1{background:#dcfce7}.world2{background:#d9f99d}.world3{background:#bae6fd}.world4{background:#fed7aa}.start{background:#a7f3d0}.finish{background:#fdba74}.minion{background:#f5d0fe}.redcell{background:#fecaca}.coin-cell{background:#fde68a}.challenge{background:#fef08a}.bonuscell{background:#cffafe}.portalcell{background:#bfdbfe}.trapcell{background:#fca5a5}.help{background:#fbcfe8}.duelcell{background:#ddd6fe}.treasure{background:#fde68a}.chestcell{background:#fef3c7}.blankCell{opacity:0;border:none;background:transparent}.tokens{position:absolute;bottom:2px;right:2px;display:flex;gap:1px;flex-wrap:wrap;max-width:95%;z-index:3}.token{width:18px;height:18px;border-radius:50%;border:2px solid #111827;display:inline-flex;align-items:center;justify-content:center;color:white;font-size:10px;font-weight:900}.dead-token{opacity:.35;filter:grayscale(1)}
+.panel{height:100%;padding:6px;display:flex;flex-direction:column;min-height:0}.progress{height:15px;border:2px solid var(--ink);border-radius:999px;background:white;margin-bottom:4px;position:relative;overflow:hidden}.progress-fill{height:100%;background:linear-gradient(90deg,#86efac,#facc15,#fb923c);width:0%}.progress-label{position:absolute;inset:0;text-align:center;font-size:10px;font-weight:900;line-height:12px}.status-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:4px}.status-box{background:white;border:2px solid var(--ink);border-radius:13px;padding:4px;text-align:center;font-weight:900;font-size:11px;line-height:1.12}.turn{background:var(--yellow);border:2px solid var(--ink);border-radius:13px;padding:5px;text-align:center;margin-bottom:4px;font-weight:900;font-size:12px}.players{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:4px}.player{background:white;border:2px solid var(--ink);border-radius:13px;padding:4px;font-weight:900;text-align:center;font-size:10px;line-height:1.1}.player.dead{background:#d1d5db;color:#374151;opacity:.8}.active{outline:4px solid var(--gold)}.dice{font-size:30px;text-align:center;background:white;border:2px solid var(--ink);border-radius:16px;padding:4px;margin-bottom:4px;min-height:44px}.shop-title{text-align:center;font-weight:900;font-size:11px;margin:1px 0}.small-actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px}.small-actions button{font-size:10px;padding:5px 2px}.pending-note{background:#fff7ed;border:2px dashed #9a3412;border-radius:13px;padding:4px;text-align:center;font-weight:900;margin-bottom:4px;display:none;font-size:10px}.card-result{flex:1;min-height:0;background:white;border:3px solid var(--ink);border-radius:18px;padding:7px;margin-top:1px;display:flex;flex-direction:column;justify-content:center}.card-result .big{font-size:30px;text-align:center;line-height:1}.card-result h3{text-align:center;font-size:clamp(15px,1.7vw,20px);margin:4px 0;line-height:1.05}.card-result p{text-align:center;font-size:clamp(11px,1.18vw,14px);line-height:1.18;margin:0}.card-challenge{background:#fef9c3}.card-bonus{background:#cffafe}.card-trap{background:#fee2e2}.card-duel{background:#ede9fe}.card-help{background:#fce7f3}.card-power{background:#dcfce7}.card-boss{background:#ffedd5}.action-buttons{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:5px}.action-buttons button{font-size:22px;padding:5px;margin-bottom:0}.log{background:#f9fafb;border:2px solid var(--ink);border-radius:14px;padding:5px;height:62px;overflow:auto;font-size:10px;margin-top:5px}.confetti{position:fixed;top:-10px;font-size:22px;animation:fall 1.8s linear forwards;z-index:99}@keyframes fall{to{transform:translateY(105vh) rotate(360deg);opacity:0}}
+.help-overlay,.end-overlay{position:fixed;inset:0;background:rgba(15,23,42,.65);display:none;align-items:center;justify-content:center;z-index:140;padding:14px}.help-modal,.end-modal{width:min(1040px,96vw);max-height:90vh;overflow:auto;background:white;border:4px solid var(--ink);border-radius:24px;box-shadow:0 12px 30px rgba(0,0,0,.38);padding:16px}.help-modal h2,.end-modal h2{text-align:center;margin:0 0 8px;font-size:28px}.help-grid,.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.help-card,.stat-card,.achievement-box{border:2px solid var(--ink);border-radius:16px;background:#f9fafb;padding:9px}.help-table{width:100%;border-collapse:collapse;font-size:13px}.help-table td,.help-table th{border:1px solid #cbd5e1;padding:5px;text-align:left}.close-help{position:sticky;bottom:0;margin-top:10px;font-size:16px;padding:10px}.stat-card h3{margin:0 0 7px;font-size:17px;display:flex;align-items:center;gap:6px}.stat-row{display:grid;grid-template-columns:1fr auto;gap:8px;border-bottom:1px solid #d1d5db;padding:3px 0;font-size:12px}.achievement-box{background:#fff7ed;margin:9px 0}.achievement-list{display:grid;grid-template-columns:repeat(2,1fr);gap:5px;font-weight:900;font-size:12px}
+@media(pointer:coarse){button,.villain-card,select,input{min-height:44px}.action-buttons button{min-height:52px;font-size:28px}}
+@media(min-width:768px) and (max-width:1180px) and (orientation:landscape){header{height:5vh;min-height:34px;padding:4px 8px 0}h1{font-size:24px}.subtitle{display:none}.layout{height:95vh;grid-template-columns:minmax(0,1fr) 360px;gap:5px;padding:4px}.board{gap:3px}.cell{border-radius:10px;padding:2px}.cell .num{font-size:10px}.cell .icon{font-size:20px}.cell .label{font-size:7px}.panel{padding:5px}.status-box,.turn,button{font-size:10px;padding:4px}.dice{font-size:26px;min-height:40px}.log{height:50px}.card-result .big{font-size:26px}.card-result h3{font-size:16px}.card-result p{font-size:11px}.small-actions button{font-size:9px}.player{font-size:9px}}
+@media(max-width:760px), (orientation:portrait){html,body{overflow:auto}header{display:block;height:auto;padding:6px}h1{font-size:22px}.subtitle{display:none}.layout{height:auto;min-height:100vh;grid-template-columns:1fr;padding:6px;gap:6px}.panel{height:auto;order:1}.board-wrap{height:70vh;min-height:520px;order:2}.board{grid-template-columns:repeat(6,1fr);grid-template-rows:repeat(11,1fr)}.cell .label{display:none}.players{grid-template-columns:repeat(2,1fr)}.setup-grid,.help-grid,.stats-grid,.achievement-list{grid-template-columns:1fr}.villains{grid-template-columns:1fr}.player-config{grid-template-columns:1fr}.help-modal,.end-modal{padding:12px;max-height:92vh}.help-modal h2,.end-modal h2{font-size:22px}}
+</style>
 </head>
 <body>
-  <header><h1>🎮 Misión Pixel</h1><p class="subtitle">Juego cooperativo digital para 2 a 4 jugadores</p></header>
-  <section id="startScreen"><div class="setup-box">
-    <h2>Configurar partida</h2>
-    <div class="setup-grid">
-      <div class="setup-section">
-        <h3>1. Cantidad de jugadores</h3>
-        <div class="count-buttons"><button class="primary" onclick="setPlayerCount(2)">2</button><button class="primary" onclick="setPlayerCount(3)">3</button><button class="primary" onclick="setPlayerCount(4)">4</button></div>
-        <h3>2. Jugadores</h3><div id="playerSetup"></div>
-      </div>
-      <div class="setup-section">
-        <h3>3. Elige al villano final</h3><div id="villainSetup" class="villains"></div>
-        <p style="font-weight:800;font-size:13px">El villano tiene 2 vidas. Solo recibe daño con 1 o 6.</p>
-      </div>
-    </div>
-    <div id="setupError" class="setup-error"></div>
-    <button class="primary start-btn" onclick="startGame()">Iniciar aventura</button>
-  </div></section>
-
-  <main id="gameArea" class="layout" style="display:none;">
-    <section class="board-wrap"><div id="board" class="board"></div></section>
-    <aside class="panel">
-      <div class="progress"><div id="progressFill" class="progress-fill"></div><div id="progressLabel" class="progress-label">Progreso</div></div>
-      <div class="status-grid"><div class="status-box">🎯 Misión<br>Llegar a 60</div><div class="status-box"><span id="bossEmoji">👾</span> <span id="bossName">Peroso</span><br><span id="bossLives">2</span> vidas</div></div>
-      <div id="turn" class="turn">Turno</div><div id="players" class="players"></div><div id="dice" class="dice">🎲</div>
-      <button id="rollButton" class="primary" onclick="rollDice()">🎲 Lanzar dado</button>
-      <div class="shop-title">🛒 Tienda Pixel</div>
-      <div class="small-actions"><button class="secondary" onclick="buyReroll()">1 🪙 repetir</button><button class="secondary" onclick="buyLife()">3 🪙 vida</button><button class="secondary" onclick="reviveFromShop()">5 🪙 revivir</button></div>
-      <div class="small-actions"><button id="soundButton" class="neutral" onclick="toggleSound()">🔊 Sonido</button><button class="neutral" onclick="toggleTheme()">🌈 Mundo</button><button class="danger" onclick="resetGame()">Reiniciar</button></div>
-      <button class="neutral" onclick="openHelp()">❔ Instrucciones / Ayuda</button>
-      <div id="pendingNote" class="pending-note">Acción pendiente</div>
-      <div id="card" class="card-result"><div class="big">🕹️</div><h3>Listos para jugar</h3><p>Lancen el dado, avancen por el tablero y derroten al villano final.</p></div>
-      <div class="action-buttons"><button id="okButton" class="ok" onclick="resolvePending(true)" disabled>✅</button><button id="noButton" class="no" onclick="resolvePending(false)" disabled>❌</button></div>
-      <div id="log" class="log"></div>
-    </aside>
-  </main>
-
-<div id="endOverlay" class="end-overlay">
-    <div class="end-modal">
-      <div id="endStatsContent"></div>
-      <button class="primary close-help" onclick="hideEndStats()">Cerrar resumen</button>
-    </div>
-  </div>
-
-  <div id="helpOverlay" class="help-overlay" onclick="closeHelp(event)">
-    <div class="help-modal" onclick="event.stopPropagation()">
-      <h2>❔ Instrucciones / Ayuda</h2>
-      <div class="help-grid">
-        <div class="help-card">
-          <h3>🎯 Objetivo</h3>
-          <p>Los jugadores deben avanzar desde la casilla 0 hasta la casilla 60 y derrotar al villano final.</p>
-          <p>Ganan todos si un jugador vivo derrota al villano.</p>
-          <p>Pierden si todos los jugadores quedan eliminados.</p>
-        </div>
-        <div class="help-card">
-          <h3>🎲 Turno de juego</h3>
-          <ol>
-            <li>Presiona <strong>Lanzar dado</strong>.</li>
-            <li>Avanza la cantidad indicada.</li>
-            <li>Resuelve la casilla donde caes.</li>
-            <li>Si aparece una acción, confirma con ✅ o cancela con ❌.</li>
-          </ol>
-        </div>
-        <div class="help-card">
-          <h3>❤️ Vidas y eliminación</h3>
-          <p>Cada jugador comienza con 2 vidas y puede tener máximo 3.</p>
-          <p>Si un jugador llega a 0 vidas, queda eliminado. Puede volver si otro jugador lo revive.</p>
-        </div>
-        <div class="help-card">
-          <h3>🪙 Monedas</h3>
-          <p>Las monedas son individuales. Cada jugador administra sus propias monedas.</p>
-          <table class="help-table">
-            <tr><th>Acción</th><th>Costo</th></tr>
-            <tr><td>Repetir dado</td><td>1 moneda</td></tr>
-            <tr><td>Comprar 1 vida</td><td>3 monedas</td></tr>
-            <tr><td>Revivir jugador</td><td>5 monedas</td></tr>
-          </table>
-        </div>
-        <div class="help-card">
-          <h3>🗺️ Casillas</h3>
-          <table class="help-table">
-            <tr><td>Blanca</td><td>Ganas 1 moneda automáticamente.</td></tr>
-            <tr><td>🔥 Roja</td><td>Pierdes 1 moneda.</td></tr>
-            <tr><td>❓ Desafío</td><td>Realiza un reto.</td></tr>
-            <tr><td>⭐ Bonus</td><td>Saca una carta positiva.</td></tr>
-            <tr><td>⚠️ Trampa</td><td>Saca una carta negativa.</td></tr>
-            <tr><td>🌀 Portal</td><td>Te transporta a otro portal.</td></tr>
-            <tr><td>💰 Tesoro</td><td>Ganas 3 monedas.</td></tr>
-          </table>
-        </div>
-        <div class="help-card">
-          <h3>👹 Estororo</h3>
-          <p>Aparece en 4 casillas aleatorias por partida.</p>
-          <p>Para derrotarlo, presiona ✅ y luego <strong>Lanzar dado</strong>. Con 4, 5 o 6 ganas. Si sale 1, 2 o 3, pierdes 1 vida.</p>
-          <p>Después del combate, Estororo desaparece y la casilla queda normal.</p>
-        </div>
-        <div class="help-card">
-          <h3>👾 Villano final</h3>
-          <p>El villano tiene 2 vidas.</p>
-          <p>Solo recibe daño si sacas <strong>1 o 6</strong>.</p>
-          <p>Si fallas, pierdes 1 vida y retrocedes 10 casillas. Si quedas con 0 vidas, eres eliminado inmediatamente.</p>
-        </div>
-        <div class="help-card">
-          <h3>🛒 Tienda Pixel</h3>
-          <p>La tienda puede usarse cuando no hay acciones pendientes.</p>
-          <p>Sirve para repetir dado, comprar vidas o revivir jugadores eliminados.</p>
-        </div>
-      </div>
-      <button class="primary close-help" onclick="hideHelp()">Cerrar ayuda</button>
-    </div>
-  </div>
-
+<header><h1>🎮 Misión Pixel</h1><p class="subtitle">Juego cooperativo digital para 2 a 4 jugadores</p></header>
+<section id="startScreen"><div class="setup-box">
+<h2>Configurar partida</h2>
+<div class="setup-grid">
+<div class="setup-section"><h3>1. Jugadores</h3><div class="count-buttons"><button class="primary" onclick="setPlayerCount(2)">2</button><button class="primary" onclick="setPlayerCount(3)">3</button><button class="primary" onclick="setPlayerCount(4)">4</button></div><h3>2. Configuración</h3><div id="playerSetup"></div></div>
+<div class="setup-section"><h3>3. Dificultad</h3><div class="difficulty-buttons"><button id="diffFácil" class="primary" onclick="selectDifficulty('Fácil')">Fácil</button><button id="diffNormal" class="primary selected" onclick="selectDifficulty('Normal')">Normal</button><button id="diffDifícil" class="primary" onclick="selectDifficulty('Difícil')">Difícil</button></div><p style="font-size:12px;font-weight:800">Fácil: más ayuda. Normal: equilibrado. Difícil: más Estororo y villano más resistente.</p><h3>4. Villano final</h3><div id="villainSetup" class="villains"></div></div>
+</div><div id="setupError" class="setup-error"></div><button class="primary start-btn" onclick="startGame()">Iniciar aventura</button></div></section>
+<main id="gameArea" class="layout" style="display:none;">
+<section class="board-wrap"><div id="board" class="board"></div></section>
+<aside class="panel">
+<div class="progress"><div id="progressFill" class="progress-fill"></div><div id="progressLabel" class="progress-label">Progreso</div></div>
+<div class="status-grid"><div class="status-box">🎯 <span id="difficultyLabel">Normal</span><br><span id="turnCount">Turno 0</span></div><div class="status-box"><span id="bossEmoji">👾</span> <span id="bossName">Peroso</span><br><span id="bossLives">2</span> vidas</div><div class="status-box">📜 Misión<br><span id="missionText">Activa</span></div></div>
+<div id="turn" class="turn">Turno</div><div id="players" class="players"></div><div id="dice" class="dice">🎲</div>
+<button id="rollButton" class="primary" onclick="rollDice()">🎲 Lanzar dado</button>
+<div class="shop-title">🛒 Tienda Pixel</div><div class="small-actions"><button class="secondary" onclick="buyReroll()">1 🪙 repetir</button><button class="secondary" onclick="buyLife()">3 🪙 vida</button><button class="secondary" onclick="reviveFromShop()">5 🪙 revivir</button></div>
+<div class="small-actions"><button id="abilityButton" class="secondary" onclick="useAbility()">✨ Habilidad</button><button id="soundButton" class="neutral" onclick="toggleSound()">🔊 Sonido</button><button class="neutral" onclick="openHelp()">❔ Ayuda</button></div>
+<div class="small-actions"><button class="neutral" onclick="toggleTheme()">🌈 Mundo</button><button class="neutral" onclick="showEndStats(gameWon)">📊 Resumen</button><button class="danger" onclick="resetGame()">Reiniciar</button></div>
+<div id="pendingNote" class="pending-note">Acción pendiente</div>
+<div id="card" class="card-result"><div class="big">🕹️</div><h3>Listos para jugar</h3><p>Lancen el dado, avancen por el tablero y derroten al villano final.</p></div>
+<div class="action-buttons"><button id="okButton" class="ok" onclick="resolvePending(true)" disabled>✅</button><button id="noButton" class="no" onclick="resolvePending(false)" disabled>❌</button></div><div id="log" class="log"></div>
+</aside></main>
+<div id="endOverlay" class="end-overlay"><div class="end-modal"><div id="endStatsContent"></div><button class="primary close-help" onclick="hideEndStats()">Cerrar resumen</button></div></div>
+<div id="helpOverlay" class="help-overlay" onclick="closeHelp(event)"><div class="help-modal" onclick="event.stopPropagation()"><h2>❔ Instrucciones / Ayuda</h2><div class="help-grid"><div class="help-card"><h3>🎯 Objetivo</h3><p>Avancen desde la casilla 0 hasta la 60 y derroten al villano final. Ganan si un jugador vivo lo derrota. Pierden si todos quedan eliminados.</p></div><div class="help-card"><h3>🎲 Turno</h3><ol><li>Lanza el dado.</li><li>Avanza.</li><li>Resuelve la casilla.</li><li>Usa ✅ o ❌ cuando aparezca una acción.</li></ol></div><div class="help-card"><h3>❤️ Vidas y monedas</h3><p>Cada jugador tiene vidas y monedas individuales. Máximo 3 vidas.</p><table class="help-table"><tr><th>Acción</th><th>Costo</th></tr><tr><td>Repetir dado</td><td>1 moneda</td></tr><tr><td>Comprar vida</td><td>3 monedas</td></tr><tr><td>Revivir</td><td>5 monedas</td></tr></table></div><div class="help-card"><h3>🗺️ Casillas</h3><table class="help-table"><tr><td>Blanca</td><td>+1 moneda</td></tr><tr><td>🔥 Roja</td><td>-1 moneda</td></tr><tr><td>❓</td><td>Desafío</td></tr><tr><td>⭐</td><td>Bonus</td></tr><tr><td>🎁</td><td>Cofre</td></tr><tr><td>🌀</td><td>Portal</td></tr><tr><td>👹</td><td>Estororo</td></tr></table></div><div class="help-card"><h3>👹 Estororo</h3><p>Con 4, 5 o 6 lo derrotas. Si no, pierdes 1 vida. Luego desaparece.</p></div><div class="help-card"><h3>👾 Villano</h3><p>Solo recibe daño con 1 o 6. Si fallas, pierdes 1 vida y retrocedes 10 casillas. En modo Fácil existe Última Esperanza.</p></div><div class="help-card"><h3>✨ Habilidades</h3><p>Cada personaje tiene una habilidad. La mayoría tiene 3 usos por partida; el Genio tiene 1.</p></div><div class="help-card"><h3>🎒 Inventario</h3><p>Cada jugador puede guardar 1 objeto. Si obtiene otro, reemplaza el anterior.</p></div></div><button class="primary close-help" onclick="hideHelp()">Cerrar ayuda</button></div></div>
 <script>
-let playerCount=2, players=[], currentPlayer=0, bossLives=2, gameOver=false, pendingAction=null, pendingDiceAction=null, soundEnabled=true, audioCtx=null, defeatedMinions=new Set(), minionCells=[], boss={emoji:'👾',name:'Peroso'}, themeIndex=0;
-const maxCell=60, minionEmojis=['👹','👺','👻','🐲','🦇','🐉','🐍','🕷️','🦂','🧌'];
+let playerCount=2,difficulty='Normal',players=[],currentPlayer=0,bossLives=2,bossMaxLives=2,gameOver=false,gameWon=false,pendingAction=null,pendingDiceAction=null,soundEnabled=true,audioCtx=null,defeatedMinions=new Set(),minionCells=[],boss={emoji:'👾',name:'Peroso'},themeIndex=0,turns=0,allowSamePlayerRoll=false,currentCardType='',lastBossFail=false;
+const maxCell=60,minionEmojis=['👹','👺','👻','🐲','🦇','🐉','🐍','🕷️','🦂','🧌'];
 const playerEmojis=['🧒','👧','🦸','🧚','🧙','🧑‍🚀','🧜','🧝','🥷','🧞'];
+const abilities={
+'🧒':['Explorador','Repite el dado gratis.',3], '👧':['Aventurera','Gana +1 moneda en casilla blanca.',3], '🦸':['Superhéroe','Evita perder 1 vida.',3], '🧚':['Hada','Cura 1 vida a otro jugador.',3], '🧙':['Mago','Cambia una carta.',3], '🧑‍🚀':['Astronauta','Evita perder moneda roja.',3], '🧜':['Sirena','Gana +1 moneda en desafío exitoso.',3], '🧝':['Elfo','Convierte un 1 en 4.',3], '🥷':['Ninja','Evita trampa o retroceso.',3], '🧞':['Genio','Vence a Estororo automáticamente.',1]
+};
 const colorOptions=[['Rojo','#ef4444'],['Azul','#3b82f6'],['Verde','#22c55e'],['Amarillo','#eab308'],['Morado','#a855f7'],['Naranjo','#f97316'],['Rosado','#ec4899'],['Celeste','#06b6d4']];
 const villains=[['👾','Peroso'],['🐉','Dragón Pixel'],['🧌','Gran Ogro'],['🧙','Mago Sombrío'],['🦹','Villano Veloz'],['🦂','Escorpión Malvado'],['🐲','Guardián Verde']];
-const redCells=[8,18,32,44,52];
+const redCells=[8,18,32,44,52], chestCells=[12,22,38,50];
 const fixedSpecial={0:['🎮','SALIDA','start'],3:['🪙','Moneda','coin-cell'],5:['❓','Desafío','challenge'],7:['⬆️','Avanza',''],9:['⭐','Bonus','bonuscell'],11:['⚔️','Duelo','duelcell'],13:['⬇️','Retrocede',''],15:['❤️','Ayuda','help'],17:['🎁','Sorpresa','bonuscell'],19:['⬆️','Avanza',''],21:['⚠️','Trampa','trapcell'],23:['❓','Desafío','challenge'],25:['⭐','Bonus','bonuscell'],27:['⚔️','Duelo','duelcell'],29:['🌀','Portal','portalcell'],31:['🪙','Moneda','coin-cell'],33:['⬇️','Retrocede',''],35:['❓','Desafío','challenge'],37:['⬆️','Avanza',''],39:['❤️','Ayuda','help'],41:['⚠️','Trampa','trapcell'],43:['⭐','Bonus','bonuscell'],45:['⚔️','Duelo','duelcell'],47:['🌀','Portal','portalcell'],49:['❓','Desafío','challenge'],51:['⬆️','Avanza',''],53:['🎁','Sorpresa','bonuscell'],55:['❤️','Ayuda','help'],57:['⚔️','Duelo','duelcell'],58:['⭐','Bonus','bonuscell'],59:['💰','Tesoro','treasure'],60:['👾','JEFE','finish']};
 const themes=[['#7dd3fc','#fef3c7'],['#0ea5e9','#ddd6fe'],['#86efac','#fef08a'],['#fdba74','#fecaca']];
-
-function setPlayerCount(n){playerCount=n; renderPlayerSetup()}
-function renderPlayerSetup(){const box=document.getElementById('playerSetup'); box.innerHTML=''; for(let i=0;i<playerCount;i++){box.innerHTML+=`<div class="player-config"><input id="pname${i}" placeholder="Nombre J${i+1}"/><select id="pemoji${i}">${playerEmojis.map(e=>`<option value="${e}">${e}</option>`).join('')}</select><select id="pcolor${i}">${colorOptions.map(c=>`<option value="${c[1]}">${c[0]}</option>`).join('')}</select></div>`}}
-function renderVillains(){const box=document.getElementById('villainSetup'); box.innerHTML=villains.map((v,i)=>`<div class="villain-card ${i===0?'selected':''}" onclick="selectVillain(${i})" id="villain${i}"><div style="font-size:34px">${v[0]}</div>${v[1]}</div>`).join('')}
-function selectVillain(i){boss={emoji:villains[i][0],name:villains[i][1]}; villains.forEach((_,idx)=>document.getElementById('villain'+idx).classList.toggle('selected',idx===i))}
-function makeStats(){return {diceRolls:0,ones:0,sixes:0,spacesMoved:0,coinsEarned:0,coinsSpent:0,livesLost:0,livesBought:0,challengesWon:0,challengesFailed:0,minionsDefeated:0,estororoFights:0,bossHits:0,trapsHit:0,redCellsHit:0,revivesGiven:0,revivalsReceived:0,portalsUsed:0,treasuresFound:0,bonusUsed:0}}
-function validateSetup(){const names=[],emojis=[],colors=[]; for(let i=0;i<playerCount;i++){const name=document.getElementById('pname'+i).value.trim(); const emoji=document.getElementById('pemoji'+i).value; const color=document.getElementById('pcolor'+i).value; if(!name)return `Falta el nombre del Jugador ${i+1}.`; names.push(name); emojis.push(emoji); colors.push(color)} if(new Set(emojis).size!==emojis.length)return 'No se pueden repetir emojis.'; if(new Set(colors).size!==colors.length)return 'No se pueden repetir colores.'; return ''}
-function startGame(){const err=validateSetup(); document.getElementById('setupError').textContent=err; if(err)return; players=[]; for(let i=0;i<playerCount;i++){players.push({name:document.getElementById('pname'+i).value.trim(),emoji:document.getElementById('pemoji'+i).value,color:document.getElementById('pcolor'+i).value,pos:0,lives:2,coins:0,dead:false,stats:makeStats()})} currentPlayer=0; bossLives=2; gameOver=false; pendingAction=null; pendingDiceAction=null; defeatedMinions=new Set(); minionCells=randomMinions(); document.getElementById('startScreen').style.display='none'; document.getElementById('gameArea').style.display='grid'; document.getElementById('bossEmoji').textContent=boss.emoji; document.getElementById('bossName').textContent=boss.name; document.getElementById('log').innerHTML=''; document.getElementById('dice').textContent='🎲'; initBoard(); showCard('🕹️','Partida iniciada',`Lleguen a la casilla 60 y derroten a ${boss.name}.`,''); log(`Partida iniciada contra ${boss.name}.`); render()}
-function randomMinions(){const blocked=new Set([...Object.keys(fixedSpecial).map(Number),...redCells]); const pool=[]; for(let i=1;i<59;i++) if(!blocked.has(i)) pool.push(i); const out=[]; while(out.length<4){const idx=Math.floor(Math.random()*pool.length); out.push(pool.splice(idx,1)[0])} return out.sort((a,b)=>a-b)}
-function specialFor(n){if(minionCells.includes(n)&&!defeatedMinions.has(n))return ['👹','Estororo','minion']; if(redCells.includes(n))return ['🔥','Pierde 🪙','redcell']; if(fixedSpecial[n]){const s=[...fixedSpecial[n]]; if(n===60)s[0]=boss.emoji; return s} return null}
-function worldClass(n){if(n<=15)return'world1';if(n<=30)return'world2';if(n<=45)return'world3';return'world4'}
-function initBoard(){const board=document.getElementById('board'); board.innerHTML=''; for(let i=0;i<66;i++){if(i>60){const b=document.createElement('div');b.className='blankCell';board.appendChild(b);continue} const data=specialFor(i)||['','','']; const cell=document.createElement('div'); cell.id='cell-'+i; cell.className=`cell ${worldClass(i)} ${data[2]}`; cell.innerHTML=`<div class="num">${i}</div><div class="icon">${data[0]}</div><div class="label">${data[1]}</div><div class="tokens" id="tokens-${i}"></div>`; board.appendChild(cell)}}
-function refreshBoard(){for(let i=0;i<=60;i++){const cell=document.getElementById('cell-'+i), data=specialFor(i)||['','','']; if(!cell)continue; cell.className=`cell ${worldClass(i)} ${data[2]}`; cell.querySelector('.icon').textContent=data[0]; cell.querySelector('.label').textContent=data[1]}}
-function render(){document.getElementById('bossLives').textContent=bossLives; document.getElementById('turn').textContent=gameOver?'Juego terminado':`Turno: ${players[currentPlayer]?.emoji||''} ${players[currentPlayer]?.name||''}`; document.getElementById('rollButton').disabled=gameOver||!!pendingAction||players[currentPlayer]?.dead; document.getElementById('rollButton').textContent=pendingDiceAction?pendingDiceAction.label:'🎲 Lanzar dado'; document.getElementById('okButton').disabled=gameOver||!pendingAction; document.getElementById('noButton').disabled=gameOver||!pendingAction; document.getElementById('pendingNote').style.display=(pendingAction||pendingDiceAction)?'block':'none'; document.getElementById('pendingNote').textContent=pendingDiceAction?'Tirada especial pendiente: presiona Lanzar dado.':'Acción pendiente: confirma con ✅ o ❌.'; document.getElementById('players').innerHTML=players.map((p,i)=>`<div class="player ${p.dead?'dead':''} ${i===currentPlayer&&!gameOver?'active':''}"><span class="token ${p.dead?'dead-token':''}" style="background:${p.color}">${p.emoji}</span><br>${p.name}<br>❤️ ${p.lives}/3 · 🪙 ${p.coins}${p.dead?'<br>💀 Eliminado':''}</div>`).join(''); refreshBoard(); for(let i=0;i<=60;i++){const t=document.getElementById('tokens-'+i); if(t)t.innerHTML=''} players.forEach(p=>{const t=document.createElement('span'); t.className=`token ${p.dead?'dead-token':''}`; t.style.background=p.color; t.textContent=p.emoji; document.getElementById('tokens-'+p.pos).appendChild(t)}); const maxPos=Math.max(...players.map(p=>p.pos)); document.getElementById('progressFill').style.width=Math.min(100,(maxPos/60)*100)+'%'; document.getElementById('progressLabel').textContent=`Jugador más avanzado: casilla ${maxPos}/60`; if(!gameOver&&players.every(p=>p.dead))loseGame()}
-function active(){return players[currentPlayer]}
-function nextLivingIndex(start){for(let k=1;k<=players.length;k++){const idx=(start+k)%players.length;if(!players[idx].dead)return idx}return start}
-function endTurn(){if(gameOver)return; currentPlayer=nextLivingIndex(currentPlayer); if(active().pos===60)prepareBoss(); render()}
-function rollDice(){if(gameOver||pendingAction)return; if(active().dead){endTurn();return} if(pendingDiceAction){resolveDiceAction();return} if(active().pos===60){prepareBoss();return} animateDice(dice=>{log(`${active().name} sacó ${dice}.`); movePlayer(currentPlayer,dice,false); checkCell(active().pos); render()})}
-function animateDice(cb){soundDice();let n=0;const id=setInterval(()=>{document.getElementById('dice').textContent='🎲 '+randomDice();n++;if(n>=8){clearInterval(id);const d=randomDice();document.getElementById('dice').textContent='🎲 '+d;if(active()&&active().stats){active().stats.diceRolls++; if(d===1)active().stats.ones++; if(d===6)active().stats.sixes++;}cb(d)}},55)}
-function randomDice(){return Math.floor(Math.random()*6)+1}
-function armDiceAction(label,resolver){pendingDiceAction={label,resolver};pendingAction=null;showCard('🎲','Tirada especial','Presiona el botón de dado para resolver la acción.','');render()}
-function resolveDiceAction(){const action=pendingDiceAction;if(!action)return; animateDice(dice=>{pendingDiceAction=null; action.resolver(dice); if(!gameOver)endTurn(); render()})}
-function movePlayer(i,steps,rerender=true){const p=players[i],old=p.pos;p.pos=Math.max(0,Math.min(60,p.pos+steps));if(p.stats&&p.pos>old)p.stats.spacesMoved+=(p.pos-old);log(`${p.name} va de ${old} a ${p.pos}.`);if(p.pos>=60&&!gameOver)prepareBoss();if(rerender)render()}
-function moveAll(steps){players.forEach((p,i)=>{if(!p.dead)movePlayer(i,steps,false)});render()}
-function moveLastPlayer(steps){const living=players.map((p,i)=>({...p,i})).filter(p=>!p.dead); const min=Math.min(...living.map(p=>p.pos)); const idx=living.find(p=>p.pos===min).i; movePlayer(idx,steps,true)}
-function addCoins(i,amount){const p=players[i];p.coins=Math.max(0,p.coins+amount);if(p.stats&&amount>0)p.stats.coinsEarned+=amount;log(amount>=0?`${p.name} gana ${amount} moneda(s).`:`${p.name} pierde ${Math.abs(amount)} moneda(s).`);render()}
-function addLife(i,amount){const p=players[i];p.lives=Math.min(3,p.lives+amount);log(`${p.name} queda con ${p.lives} vida(s).`);render()}
-function loseLife(i){const p=players[i];p.lives-=1;if(p.stats)p.stats.livesLost++;log(`${p.name} pierde 1 vida. Queda con ${p.lives}.`); if(p.lives<=0){p.lives=0;p.dead=true;soundNo();showCard('💀','Jugador eliminado',`${p.name} quedó eliminado, pero puede ser revivido con 5 monedas.`, 'card-trap')} render()}
-function loseGame(){gameOver=true;pendingAction=null;pendingDiceAction=null;showCard('💔','Derrota','Todos los jugadores quedaron eliminados. Reinicien para intentarlo otra vez.','card-trap');showEndStats(false)}
-function checkCell(pos){const data=specialFor(pos); if(!data||data[1]==='Vencido'){addCoins(currentPlayer,1); showCard('🪙','Casilla blanca',`${active().name} gana 1 moneda.`, ''); endTurn(); return} const label=data[1];
- if(label==='SALIDA'){showCard('🎮','Salida','Comienza la aventura.','');endTurn()} else if(label==='Pierde 🪙')prepareSimple('🔥','Casilla roja','Presiona ✅ para perder 1 moneda.',()=>{active().stats.redCellsHit++;addCoins(currentPlayer,-1)},()=>log('Casilla roja evitada.'),'card-trap'); else if(label==='Moneda')prepareSimple('🪙','Moneda','Presiona ✅ para ganar 1 moneda.',()=>addCoins(currentPlayer,1),()=>log('Moneda no tomada.'),''); else if(label==='Desafío')prepareCard('desafio'); else if(label==='Avanza')prepareSimple('⬆️','Avanza','Presiona ✅ para avanzar 2 casillas.',()=>movePlayer(currentPlayer,2),()=>log('Avance cancelado.'),''); else if(label==='Bonus')prepareCard('bonus'); else if(label==='Duelo')prepareCard('duelo'); else if(label==='Retrocede')prepareSimple('⬇️','Retrocede','Presiona ✅ para retroceder 2 casillas.',()=>movePlayer(currentPlayer,-2),()=>log('Retroceso evitado.'),''); else if(label==='Ayuda')prepareCard('ayuda'); else if(label==='Sorpresa')prepareRandomAny(); else if(label==='Trampa')prepareCard('trampa'); else if(label==='Portal')preparePortal(pos); else if(label==='Estororo')prepareMinion(pos); else if(label==='Tesoro')prepareSimple('💰','Tesoro final','Presiona ✅ para ganar 3 monedas.',()=>{active().stats.treasuresFound++;addCoins(currentPlayer,3)},()=>log('Tesoro no tomado.'),'card-bonus'); else if(label==='JEFE')prepareBoss()}
-function prepareSimple(icon,title,text,onOk,onNo,cls){soundCard();showCard(icon,title,text,cls);pendingAction={onOk,onNo,keepTurn:false};render()}
-function preparePortal(pos){const target=pos===29?47:pos===47?59:null; if(!target){addCoins(currentPlayer,1);showCard('🪙','Portal cerrado','Este portal ya no lleva al jefe. Ganas 1 moneda.','');endTurn();return} prepareSimple('🌀','Portal',`Presiona ✅ para viajar a la casilla ${target}.`,()=>{active().stats.portalsUsed++;players[currentPlayer].pos=target;log(`${active().name} viaja por portal a ${target}.`);checkCell(target)},()=>log('Portal no usado.'),'')}
-function prepareMinion(cell){if(defeatedMinions.has(cell)){addCoins(currentPlayer,1);endTurn();return} const emoji=minionEmojis[Math.floor(Math.random()*minionEmojis.length)];showCard(emoji,'Estororo',`${active().name} enfrenta a Estororo. Presiona ✅ y luego Lanzar dado. Con 4, 5 o 6 lo derrotas. Si gana, pierdes 1 vida, pero desaparece.`, 'card-duel');pendingAction={onOk:()=>armDiceAction(`${emoji} Lanzar contra Estororo`,dice=>minionRoll(dice,cell,emoji)),onNo:()=>log('Evitaste enfrentar a Estororo.'),keepTurn:false};render()}
-function prepareBoss(){showCard(boss.emoji,boss.name,`${boss.name} tiene ${bossLives} vida(s). Presiona ✅ y luego Lanzar dado. Solo con 1 o 6 le quitas 1 vida. Si fallas, pierdes 1 vida y retrocedes 10 casillas.`, 'card-boss');pendingAction={onOk:()=>armDiceAction(`${boss.emoji} Lanzar contra ${boss.name}`,finalBossRoll),onNo:()=>{loseLife(currentPlayer); if(!active().dead)movePlayer(currentPlayer,-10)},keepTurn:false};render()}
-function prepareRandomAny(){const types=['desafio','bonus','trampa','duelo','ayuda','power'];prepareCard(types[Math.floor(Math.random()*types.length)])}
-function prepareCard(type){soundCard();const list=cards[type];const card=list[Math.floor(Math.random()*list.length)];showCard(card[0],card[1],card[2],`card-${type}`);log(`Carta: ${card[1]}.`);pendingAction={onOk:()=>{if(type==='desafio')active().stats.challengesWon++; if(type==='trampa')active().stats.trapsHit++; if(type==='bonus')active().stats.bonusUsed++; card[3]()},onNo:()=>{if(type==='desafio')active().stats.challengesFailed++; card[4]()},keepTurn:card[1]==='Dado Mágico'};render()}
-function resolvePending(ok){if(!pendingAction||gameOver)return;const a=pendingAction;pendingAction=null;if(ok){soundOk();log('Acción confirmada con ✅.');a.onOk()}else{soundNo();log('Acción marcada con ❌.');a.onNo()}if(!gameOver&&!a.keepTurn&&!pendingDiceAction)endTurn();render()}
-function showCard(icon,title,text,cls=''){const c=document.getElementById('card');c.className='card-result '+cls;c.innerHTML=`<div class="big">${icon}</div><h3>${title}</h3><p>${text}</p>`}
-
-const cards={
- desafio:[
-  ['❓','Canción de la Mosca','Canta la canción de la mosca de Cachureos. Si lo haces, presionen ✅ y ganas 1 moneda.',()=>addCoins(currentPlayer,1),()=>log('Desafío no completado.')],['❓','Sonido Secreto','Haz un sonido de videojuego. Si alguien lo reconoce, presionen ✅ y avanzas 1 casilla.',()=>movePlayer(currentPlayer,1),()=>log('Desafío no completado.')],['❓','Animal Misterioso','Imita un animal sin hablar. Si el equipo adivina, presionen ✅ y ganas 1 moneda.',()=>addCoins(currentPlayer,1),()=>log('Desafío no completado.')],['❓','Héroe Inventado','Inventa el nombre de un héroe pixelado. Si todos lo aprueban, presionen ✅ y ganas 1 moneda.',()=>addCoins(currentPlayer,1),()=>log('Desafío no completado.')],['❓','Dibujo Invisible','Dibuja una figura en el aire. Si alguien adivina, presionen ✅ y avanzas 1 casilla.',()=>movePlayer(currentPlayer,1),()=>log('Desafío no completado.')],['❓','Adivinanza Libre','Di una adivinanza. Si alguien acierta, presionen ✅ y ganas 1 moneda.',()=>addCoins(currentPlayer,1),()=>log('Nadie acertó.')],['❓','Objeto Secreto','Da una pista sobre un objeto de la casa. Si alguien adivina, presionen ✅ y ganas 1 moneda.',()=>addCoins(currentPlayer,1),()=>log('Desafío no completado.')],['❓','Salto de Plataforma','Actúa como si saltaras un obstáculo. Si lo haces, presionen ✅ y avanzas 1 casilla.',()=>movePlayer(currentPlayer,1),()=>log('Desafío no completado.')],['❓','Gato Juanito','Canta la canción del Gato Juanito. Si lo haces, presionen ✅ y ganas 1 moneda.',()=>addCoins(currentPlayer,1),()=>log('Desafío no completado.')],['❓','Waka Waka','Canta o baila un pedacito de Waka Waka. Si lo haces, presionen ✅ y avanzas 1 casilla.',()=>movePlayer(currentPlayer,1),()=>log('Desafío no completado.')],['❓','Bloque en el Aire','Imita a Mario destruyendo un bloque en el aire. Si lo haces, presionen ✅ y ganas 1 moneda.',()=>addCoins(currentPlayer,1),()=>log('Desafío no completado.')],['❓','Personajes de Cuento','Hagan hasta 10 preguntas para adivinar un personaje de cuento. Si lo adivinan, presionen ✅ y ganas 1 moneda.',()=>addCoins(currentPlayer,1),()=>log('No adivinaron.')],['❓','Adivina el Animal','Da pistas para que el equipo adivine un animal. Si aciertan, presionen ✅ y ganas 1 moneda.',()=>addCoins(currentPlayer,1),()=>log('No adivinaron.')],['❓','Color de la Fruta','Pregunta el color de una fruta. Si responden bien, presionen ✅ y ganas 1 moneda.',()=>addCoins(currentPlayer,1),()=>log('Respuesta incorrecta.')],['❓','Personaje de Hielo','Adivina el personaje: tiene poderes de hielo, vive en un reino nevado y canta una canción muy famosa.',()=>addCoins(currentPlayer,1),()=>log('No adivinaron.')],['❓','Vaquero de Juguete','Adivina el personaje: usa sombrero, es un juguete y siempre cuida a su dueño.',()=>addCoins(currentPlayer,1),()=>log('No adivinaron.')],['❓','Pez Perdido','Adivina el personaje: vive en el mar, tiene una aleta más corta y su papá lo busca.',()=>addCoins(currentPlayer,1),()=>log('No adivinaron.')],['❓','León Valiente','Adivina el personaje: es un cachorro de león y debe aprender a ser rey.',()=>movePlayer(currentPlayer,1),()=>log('No adivinaron.')],['❓','Tres Cosas Rojas','Nombra 3 cosas de color rojo.',()=>addCoins(currentPlayer,1),()=>log('Desafío no completado.')],['❓','Tres Cosas Azules','Nombra 3 cosas de color azul.',()=>addCoins(currentPlayer,1),()=>log('Desafío no completado.')],['❓','Tres Cosas Amarillas','Nombra 3 cosas de color amarillo.',()=>addCoins(currentPlayer,1),()=>log('Desafío no completado.')],['❓','Tres Cosas Verdes','Nombra 3 cosas de color verde.',()=>addCoins(currentPlayer,1),()=>log('Desafío no completado.')],['❓','Palabra en Inglés','Di 3 palabras en inglés que conozcas.',()=>addCoins(currentPlayer,1),()=>log('Desafío no completado.')]
- ],
- bonus:[['⭐','Súper Salto','Presiona ✅ para avanzar 3 casillas.',()=>movePlayer(currentPlayer,3),()=>log('Bonus cancelado.')],['⭐','Moneda Dorada','Presiona ✅ para ganar 2 monedas.',()=>addCoins(currentPlayer,2),()=>log('Bonus cancelado.')],['⭐','Estrella Brillante','Presiona ✅ para que todos avancen 1 casilla.',()=>moveAll(1),()=>log('Bonus cancelado.')],['⭐','Dado Mágico','Presiona ✅ para lanzar nuevamente con el mismo jugador.',()=>bonusReroll(),()=>log('Bonus cancelado.')],['⭐','Portal Secreto','Presiona ✅ para avanzar al siguiente portal.',()=>moveToNextPortal(),()=>log('Bonus cancelado.')],['⭐','Turbo Pixel','Presiona ✅ para que el jugador más atrasado avance 3 casillas.',()=>moveLastPlayer(3),()=>log('Bonus cancelado.')],['⭐','Revivir Aliado','Presiona ✅ para revivir a un jugador eliminado. Si no hay eliminados, ganas 2 monedas.',()=>reviveBonus(),()=>log('Bonus cancelado.')]],
- trampa:[['⚠️','Nube Traviesa','Presiona ✅ para retroceder 2 casillas.',()=>movePlayer(currentPlayer,-2),()=>log('Trampa evitada.')],['⚠️','Bloque Roto','Presiona ✅ para perder 1 moneda.',()=>addCoins(currentPlayer,-1),()=>log('Trampa evitada.')],['⚠️','Camino Resbaloso','Presiona ✅ para retroceder 1 casilla.',()=>movePlayer(currentPlayer,-1),()=>log('Trampa evitada.')],['⚠️','Enemigo Escondido','Presiona ✅ y luego Lanzar dado. Si sale 1, 2 o 3, pierdes 1 vida.',()=>armDiceAction('⚠️ Lanzar contra enemigo',enemyHiddenRoll),()=>log('Trampa evitada.')]],
- duelo:[['⚔️','Monstruo Verde','Presiona ✅ y luego Lanzar dado. Si sale 4, 5 o 6, ganas 1 moneda.',()=>armDiceAction('⚔️ Lanzar duelo',dice=>duelRoll(dice,4,()=>addCoins(currentPlayer,1),'Ganaste 1 moneda.')),()=>log('Duelo cancelado.')],['⚔️','Robot Guardián','Presiona ✅ y luego Lanzar dado. Si sale 5 o 6, avanzas 2 casillas.',()=>armDiceAction('⚔️ Lanzar duelo',dice=>duelRoll(dice,5,()=>movePlayer(currentPlayer,2),'Avanzas 2 casillas.')),()=>log('Duelo cancelado.')],['⚔️','Sombra Pixelada','Presiona ✅ y luego Lanzar dado. Con 1 o 2 retrocedes 1. Con 3 a 6 ganas 1 moneda.',()=>armDiceAction('⚔️ Lanzar duelo',shadowDuelRoll),()=>log('Duelo cancelado.')],['⚔️','Mini Jefe','Presiona ✅ y luego Lanzar dado. Si sale 6, recuperas 1 vida.',()=>armDiceAction('⚔️ Lanzar duelo',dice=>duelRoll(dice,6,()=>addLife(currentPlayer,1),'Recuperas 1 vida.')),()=>log('Duelo cancelado.')]],
- ayuda:[['❤️','Todos Juntos','Presiona ✅ para que el jugador más atrasado avance 3 casillas.',()=>moveLastPlayer(3),()=>log('Ayuda cancelada.')],['❤️','Corazón Extra','Presiona ✅ para recuperar 1 vida.',()=>addLife(currentPlayer,1),()=>log('Ayuda cancelada.')],['❤️','Mano Amiga','Presiona ✅ para que tú y el más atrasado avancen 2 casillas.',()=>{movePlayer(currentPlayer,2);moveLastPlayer(2)},()=>log('Ayuda cancelada.')],['❤️','Equipo Unido','Presiona ✅ para que cada jugador vivo gane 1 moneda.',()=>players.forEach((p,i)=>{if(!p.dead)addCoins(i,1)}),()=>log('Ayuda cancelada.')]],
- power:[['🛡️','Botas Veloces','Presiona ✅ para avanzar 2 casillas extra.',()=>movePlayer(currentPlayer,2),()=>log('Power-Up cancelado.')],['🛡️','Escudo Protector','Presiona ✅ para ganar 1 moneda.',()=>addCoins(currentPlayer,1),()=>log('Power-Up cancelado.')],['🛡️','Llave Pixelada','Presiona ✅ para avanzar al portal más cercano.',()=>moveToNextPortal(),()=>log('Power-Up cancelado.')]]
-};
-function bonusReroll(){pendingAction=null;showCard('🎲','Lanza otra vez','Presiona Lanzar dado para jugar nuevamente con el mismo jugador.','');render()}
-function moveToNextPortal(){const portals=[29,47,59];const next=portals.find(p=>p>active().pos)||59;active().pos=next;log(`${active().name} avanza al portal ${next}.`);checkCell(next)}
-function duelRoll(dice,needed,reward,text){log(`Duelo: salió ${dice}.`); if(dice>=needed){soundOk();log(text);reward()}else{soundNo();log('No ganaste el duelo.')}}
-function shadowDuelRoll(dice){log(`Duelo contra sombra: salió ${dice}.`); if(dice<=2){soundNo();movePlayer(currentPlayer,-1)} else{soundOk();addCoins(currentPlayer,1)}}
-function enemyHiddenRoll(dice){log(`Enemigo escondido: salió ${dice}.`); if(dice<=3)loseLife(currentPlayer); else{soundOk();log('Esquivaste al enemigo.')}}
-function minionRoll(dice,cell,emoji){active().stats.estororoFights++;log(`Estororo ${emoji} en casilla ${cell}: salió ${dice}.`); if(dice>=4){active().stats.minionsDefeated++;soundOk();showCard('✅','Estororo derrotado','Ganaste el combate. La casilla queda blanca.','card-duel')} else{soundNo();loseLife(currentPlayer); if(!gameOver)showCard(emoji,'Estororo gana','Pierdes 1 vida, pero Estororo desaparece.','card-trap')} defeatedMinions.add(cell);render()}
-function finalBossRoll(dice){log(`Contra ${boss.name}: salió ${dice}.`); if(dice===1||dice===6){active().stats.bossHits++;bossLives--;soundOk(); if(bossLives<=0){gameOver=true;soundWin();showCard('🏆','¡Victoria Pixel!',`Derrotaron a ${boss.name}.`, 'card-boss');confetti();showEndStats(true)} else{showCard(boss.emoji,'¡Golpe crítico!',`${boss.name} pierde 1 vida. Le queda ${bossLives}.`, 'card-boss')}} else{soundNo();loseLife(currentPlayer); if(!active().dead)movePlayer(currentPlayer,-10); if(!gameOver)showCard(boss.emoji,'Contraataque',`No salió 1 ni 6. Pierdes 1 vida y retrocedes 10 casillas.`, 'card-boss')} render()}
-function buyReroll(){if(blockedShop())return; if(active().coins>=1){active().coins--;active().stats.coinsSpent++;soundOk();log(`${active().name} compra repetir dado.`);render()} else{soundNo();log('No tienes monedas suficientes.')}}
-function buyLife(){if(blockedShop())return; if(active().coins>=3&&active().lives<3){active().coins-=3;active().stats.coinsSpent+=3;active().stats.livesBought++;addLife(currentPlayer,1);log(`${active().name} compró 1 vida.`)} else{soundNo();log('No puedes comprar vida: necesitas 3 monedas y tener menos de 3 vidas.')}}
-function reviveFromShop(){if(blockedShop())return; const dead=players.findIndex(p=>p.dead); if(dead<0){soundNo();log('No hay jugadores eliminados.');return} if(active().coins<5){soundNo();log('Necesitas 5 monedas para revivir.');return} active().coins-=5;active().stats.coinsSpent+=5;active().stats.revivesGiven++; revivePlayer(dead);render()}
-function reviveBonus(){const dead=players.findIndex(p=>p.dead); if(dead<0){addCoins(currentPlayer,2);log('No había eliminados: ganas 2 monedas.')} else revivePlayer(dead)}
-function revivePlayer(idx){const minPos=Math.min(...players.filter(p=>!p.dead).map(p=>p.pos)); players[idx].dead=false;players[idx].lives=2;players[idx].pos=Math.max(0,minPos-5);players[idx].stats.revivalsReceived++;soundOk();log(`${players[idx].name} revive con 2 vidas en casilla ${players[idx].pos}.`);showCard('✨','Jugador revivido',`${players[idx].name} vuelve al juego con 2 vidas.`, 'card-help')}
-function blockedShop(){if(gameOver||pendingAction||pendingDiceAction){log('Primero resuelve la acción pendiente.');return true} if(active().dead){log('Jugador eliminado no puede comprar.');return true} return false}
-function resetGame(){soundOk();hideEndStats();document.getElementById('startScreen').style.display='flex';document.getElementById('gameArea').style.display='none';document.getElementById('setupError').textContent=''}
-function toggleTheme(){themeIndex=(themeIndex+1)%themes.length;document.body.style.background=`linear-gradient(180deg,${themes[themeIndex][0]},${themes[themeIndex][1]})`}
-function showEndStats(victory){const html=buildEndStats(victory);document.getElementById('endStatsContent').innerHTML=html;document.getElementById('endOverlay').style.display='flex'}
-function hideEndStats(){document.getElementById('endOverlay').style.display='none'}
-function topPlayer(metric){let best=null;players.forEach(p=>{const v=p.stats[metric]||0;if(v>0&&(!best||v>best.value))best={player:p,value:v}});return best}
-function buildEndStats(victory){const achievements=[];const defs=[['🏆 Héroe Pixel','bossHits','Golpeó al villano'],['🪙 Rey de Monedas','coinsEarned','Ganó más monedas'],['⚔️ Cazador de Estororo','minionsDefeated','Derrotó más Estororo'],['🎲 Suerte Dorada','sixes','Sacó más 6'],['❓ Maestro de Desafíos','challengesWon','Completó más desafíos'],['❤️ Guardián del Equipo','revivesGiven','Revivió aliados'],['🌀 Viajero de Portales','portalsUsed','Usó más portales'],['💰 Buscatesoros','treasuresFound','Encontró tesoros']];defs.forEach(d=>{const t=topPlayer(d[1]);if(t)achievements.push(`${d[0]}: ${t.player.emoji} ${t.player.name} (${t.value})`)});const cards=players.map(p=>`<div class="stat-card"><h3><span class="token" style="background:${p.color}">${p.emoji}</span>${p.name} ${p.dead?'💀':''}</h3><div class="stat-row"><span>Estado</span><strong>${p.dead?'Eliminado':'Activo'}</strong></div><div class="stat-row"><span>Vidas finales</span><strong>${p.lives}</strong></div><div class="stat-row"><span>Monedas finales</span><strong>${p.coins}</strong></div><div class="stat-row"><span>Monedas ganadas</span><strong>${p.stats.coinsEarned}</strong></div><div class="stat-row"><span>Monedas gastadas</span><strong>${p.stats.coinsSpent}</strong></div><div class="stat-row"><span>Casillas avanzadas</span><strong>${p.stats.spacesMoved}</strong></div><div class="stat-row"><span>Tiradas de dado</span><strong>${p.stats.diceRolls}</strong></div><div class="stat-row"><span>Números 1 / 6</span><strong>${p.stats.ones} / ${p.stats.sixes}</strong></div><div class="stat-row"><span>Desafíos ganados</span><strong>${p.stats.challengesWon}</strong></div><div class="stat-row"><span>Desafíos fallidos</span><strong>${p.stats.challengesFailed}</strong></div><div class="stat-row"><span>Estororo derrotados</span><strong>${p.stats.minionsDefeated}</strong></div><div class="stat-row"><span>Golpes al villano</span><strong>${p.stats.bossHits}</strong></div><div class="stat-row"><span>Vidas perdidas</span><strong>${p.stats.livesLost}</strong></div><div class="stat-row"><span>Vidas compradas</span><strong>${p.stats.livesBought}</strong></div><div class="stat-row"><span>Revivió / Fue revivido</span><strong>${p.stats.revivesGiven} / ${p.stats.revivalsReceived}</strong></div></div>`).join('');return `<h2>${victory?'🏆 ¡Victoria Pixel!':'💔 Fin de la partida'}</h2><div class="end-summary">${victory?`Derrotaron a ${boss.name}.`: 'Todos los jugadores quedaron eliminados.'}</div><div class="achievement-box"><h3>Logros de la partida</h3><div class="achievement-list">${achievements.length?achievements.map(a=>`<div>${a}</div>`).join(''):'<div>No hubo logros destacados esta vez.</div>'}</div></div><h3>Estadísticas por jugador</h3><div class="stats-grid">${cards}</div>`}
-function openHelp(){document.getElementById('helpOverlay').style.display='flex'}
-function hideHelp(){document.getElementById('helpOverlay').style.display='none'}
-function closeHelp(event){if(event.target.id==='helpOverlay')hideHelp()}
-function log(msg){const box=document.getElementById('log');const item=document.createElement('div');item.textContent='• '+msg;box.prepend(item)}
-function confetti(){['🎉','⭐','✨','🏆','🎊'].forEach((e,i)=>{for(let j=0;j<12;j++){const s=document.createElement('div');s.className='confetti';s.textContent=e;s.style.left=Math.random()*100+'vw';s.style.animationDelay=(Math.random()*.6)+'s';document.body.appendChild(s);setTimeout(()=>s.remove(),2400)}})}
-function ensureAudio(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)()}function beep(freq=440,duration=.08,type='sine',volume=.08){if(!soundEnabled)return;ensureAudio();const osc=audioCtx.createOscillator(),gain=audioCtx.createGain();osc.type=type;osc.frequency.value=freq;gain.gain.value=volume;osc.connect(gain);gain.connect(audioCtx.destination);osc.start();gain.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+duration);osc.stop(audioCtx.currentTime+duration)}function soundDice(){[180,230,170,260,210].forEach((f,i)=>setTimeout(()=>beep(f,.045,'square',.06),i*55))}function soundOk(){beep(520,.07,'triangle',.07);setTimeout(()=>beep(760,.09,'triangle',.07),90)}function soundNo(){beep(220,.08,'sawtooth',.06);setTimeout(()=>beep(160,.12,'sawtooth',.06),90)}function soundWin(){[523,659,784,1046].forEach((f,i)=>setTimeout(()=>beep(f,.12,'triangle',.08),i*130))}function soundCard(){beep(640,.06,'sine',.05);setTimeout(()=>beep(820,.06,'sine',.05),70)}function toggleSound(){soundEnabled=!soundEnabled;document.getElementById('soundButton').textContent=soundEnabled?'🔊 Sonido':'🔇 Silencio';if(soundEnabled)soundOk()}
+const missionPool=[['Junta 5 monedas',p=>p.coins>=5,'Gana 1 vida',()=>addLife(currentPlayer,1)],['Supera 3 desafíos',p=>p.stats.challengesWon>=3,'Avanza 3 casillas',()=>movePlayer(currentPlayer,3)],['Derrota 1 Estororo',p=>p.stats.minionsDefeated>=1,'Gana 3 monedas',()=>addCoins(currentPlayer,3)],['Usa 1 portal',p=>p.stats.portalsUsed>=1,'Gana 2 monedas',()=>addCoins(currentPlayer,2)],['Encuentra 1 tesoro',p=>p.stats.treasuresFound>=1,'Recupera 1 vida',()=>addLife(currentPlayer,1)]];
+let activeMission=null;
+function setPlayerCount(n){playerCount=n;renderPlayerSetup()}function selectDifficulty(d){difficulty=d;['Fácil','Normal','Difícil'].forEach(x=>document.getElementById('diff'+x).classList.toggle('selected',x===d))}
+function renderPlayerSetup(){let box=document.getElementById('playerSetup');box.innerHTML='';for(let i=0;i<playerCount;i++){box.innerHTML+=`<div class="player-config"><input id="pname${i}" placeholder="Nombre J${i+1}"/><select id="pemoji${i}" onchange="renderPlayerSetupAbilities()">${playerEmojis.map(e=>`<option value="${e}">${e} ${abilities[e][0]}</option>`).join('')}</select><select id="pcolor${i}">${colorOptions.map(c=>`<option value="${c[1]}">${c[0]}</option>`).join('')}</select><div class="ability-help" id="abilityHelp${i}"></div></div>`}renderPlayerSetupAbilities()}
+function renderPlayerSetupAbilities(){for(let i=0;i<playerCount;i++){let e=document.getElementById('pemoji'+i)?.value;if(e)document.getElementById('abilityHelp'+i).textContent=`✨ ${abilities[e][1]} (${abilities[e][2]} uso${abilities[e][2]>1?'s':''})`}}
+function renderVillains(){document.getElementById('villainSetup').innerHTML=villains.map((v,i)=>`<div class="villain-card ${i===0?'selected':''}" onclick="selectVillain(${i})" id="villain${i}"><div style="font-size:32px">${v[0]}</div>${v[1]}</div>`).join('')}function selectVillain(i){boss={emoji:villains[i][0],name:villains[i][1]};villains.forEach((_,x)=>document.getElementById('villain'+x).classList.toggle('selected',x===i))}
+function makeStats(){return{diceRolls:0,ones:0,sixes:0,spacesMoved:0,coinsEarned:0,coinsSpent:0,livesLost:0,livesBought:0,challengesWon:0,challengesFailed:0,minionsDefeated:0,estororoFights:0,bossHits:0,trapsHit:0,redCellsHit:0,revivesGiven:0,revivalsReceived:0,portalsUsed:0,treasuresFound:0,bonusUsed:0,chestsOpened:0,abilitiesUsed:0,itemsUsed:0}}
+function validateSetup(){let names=[],emojis=[],colors=[];for(let i=0;i<playerCount;i++){let name=document.getElementById('pname'+i).value.trim(),emoji=document.getElementById('pemoji'+i).value,color=document.getElementById('pcolor'+i).value;if(!name)return`Falta el nombre del Jugador ${i+1}.`;names.push(name);emojis.push(emoji);colors.push(color)}if(new Set(emojis).size!==emojis.length)return'No se pueden repetir emojis.';if(new Set(colors).size!==colors.length)return'No se pueden repetir colores.';return''}
+function startGame(){let err=validateSetup();document.getElementById('setupError').textContent=err;if(err)return;players=[];for(let i=0;i<playerCount;i++){let emoji=document.getElementById('pemoji'+i).value;players.push({name:document.getElementById('pname'+i).value.trim(),emoji,color:document.getElementById('pcolor'+i).value,pos:0,lives:emoji==='🦸'?3:2,coins:0,dead:false,item:null,abilityUses:abilities[emoji][2],stats:makeStats(),missionDone:false})}currentPlayer=0;turns=0;gameOver=false;gameWon=false;pendingAction=null;pendingDiceAction=null;defeatedMinions=new Set();lastBossFail=false;let cfg={Fácil:[1,3],Normal:[2,4],Difícil:[3,5]}[difficulty];bossLives=bossMaxLives=cfg[0];minionCells=randomMinions(cfg[1]);activeMission=missionPool[Math.floor(Math.random()*missionPool.length)];document.getElementById('startScreen').style.display='none';document.getElementById('gameArea').style.display='grid';document.getElementById('bossEmoji').textContent=boss.emoji;document.getElementById('bossName').textContent=boss.name;document.getElementById('difficultyLabel').textContent=difficulty;document.getElementById('log').innerHTML='';document.getElementById('dice').textContent='🎲';initBoard();showCard('🕹️','Partida iniciada',`Lleguen a la casilla 60 y derroten a ${boss.name}. Misión: ${activeMission[0]}.`,'');narrate(`La aventura comienza. ${boss.name} espera al final del camino.`);render()}
+function randomMinions(count){let blocked=new Set([...Object.keys(fixedSpecial).map(Number),...redCells,...chestCells]);let pool=[];for(let i=1;i<59;i++)if(!blocked.has(i))pool.push(i);let out=[];while(out.length<count){let idx=Math.floor(Math.random()*pool.length);out.push(pool.splice(idx,1)[0])}return out.sort((a,b)=>a-b)}
+function specialFor(n){if(minionCells.includes(n)&&!defeatedMinions.has(n))return['👹','Estororo','minion'];if(redCells.includes(n))return['🔥','Pierde 🪙','redcell'];if(chestCells.includes(n))return['🎁','Cofre','chestcell'];if(fixedSpecial[n]){let s=[...fixedSpecial[n]];if(n===60)s[0]=boss.emoji;return s}return null}
+function worldClass(n){if(n<=15)return'world1';if(n<=30)return'world2';if(n<=45)return'world3';return'world4'}function initBoard(){let b=document.getElementById('board');b.innerHTML='';for(let i=0;i<66;i++){if(i>60){let x=document.createElement('div');x.className='blankCell';b.appendChild(x);continue}let d=specialFor(i)||['','',''];let c=document.createElement('div');c.id='cell-'+i;c.className=`cell ${worldClass(i)} ${d[2]}`;c.innerHTML=`<div class="num">${i}</div><div class="icon">${d[0]}</div><div class="label">${d[1]}</div><div class="tokens" id="tokens-${i}"></div>`;b.appendChild(c)}}
+function refreshBoard(){for(let i=0;i<=60;i++){let c=document.getElementById('cell-'+i),d=specialFor(i)||['','',''];if(!c)continue;c.className=`cell ${worldClass(i)} ${d[2]}`;c.querySelector('.icon').textContent=d[0];c.querySelector('.label').textContent=d[1]}}
+function render(){document.getElementById('bossLives').textContent=bossLives;document.getElementById('turnCount').textContent=`Turno ${turns}`;document.getElementById('missionText').textContent=activeMission?activeMission[0]:'-';document.getElementById('turn').textContent=gameOver?'Juego terminado':`Turno: ${active().emoji} ${active().name}`;document.getElementById('rollButton').disabled=gameOver||!!pendingAction||active().dead;document.getElementById('rollButton').textContent=pendingDiceAction?pendingDiceAction.label:(allowSamePlayerRoll?'🎲 Lanzar otra vez':'🎲 Lanzar dado');document.getElementById('abilityButton').textContent=`✨ Habilidad (${active().abilityUses})`;document.getElementById('abilityButton').disabled=gameOver||pendingAction||pendingDiceAction||active().dead||active().abilityUses<=0;document.getElementById('okButton').disabled=gameOver||!pendingAction;document.getElementById('noButton').disabled=gameOver||!pendingAction;document.getElementById('pendingNote').style.display=(pendingAction||pendingDiceAction)?'block':'none';document.getElementById('pendingNote').textContent=pendingDiceAction?'Tirada especial pendiente: presiona Lanzar dado.':'Acción pendiente: confirma con ✅ o ❌.';document.getElementById('players').innerHTML=players.map((p,i)=>`<div class="player ${p.dead?'dead':''} ${i===currentPlayer&&!gameOver?'active':''}"><span class="token ${p.dead?'dead-token':''}" style="background:${p.color}">${p.emoji}</span><br>${p.name}<br>❤️ ${p.lives}/3 · 🪙 ${p.coins}<br>✨ ${p.abilityUses} · 🎒 ${p.item?p.item.emoji:'-'}${p.dead?'<br>💀 Eliminado':''}</div>`).join('');refreshBoard();for(let i=0;i<=60;i++){let t=document.getElementById('tokens-'+i);if(t)t.innerHTML=''}players.forEach(p=>{let t=document.createElement('span');t.className=`token ${p.dead?'dead-token':''}`;t.style.background=p.color;t.textContent=p.emoji;document.getElementById('tokens-'+p.pos).appendChild(t)});let maxPos=Math.max(...players.map(p=>p.pos));document.getElementById('progressFill').style.width=Math.min(100,(maxPos/60)*100)+'%';document.getElementById('progressLabel').textContent=`Más avanzado: casilla ${maxPos}/60`;if(!gameOver&&players.every(p=>p.dead))handleTotalDefeat()}
+function active(){return players[currentPlayer]}function living(){return players.filter(p=>!p.dead)}function nextLivingIndex(start){for(let k=1;k<=players.length;k++){let i=(start+k)%players.length;if(!players[i].dead)return i}return start}
+function endTurn(){if(gameOver)return;checkMission();if(allowSamePlayerRoll){allowSamePlayerRoll=false;render();return}currentPlayer=nextLivingIndex(currentPlayer);turns++;if(active().pos===60)prepareBoss();render()}
+function rollDice(){if(gameOver||pendingAction)return;if(active().dead){endTurn();return}if(pendingDiceAction){resolveDiceAction();return}if(active().pos===60){prepareBoss();return}animateDice(d=>{if(active().emoji==='🧝'&&d===1&&active().abilityUses>0){active().abilityUses--;active().stats.abilitiesUsed++;d=4;document.getElementById('dice').textContent='🎲 4';narrate(`${active().name} usa poder de Elfo: el 1 se convierte en 4.`)}narrate(`${active().name} avanza con el dado.`);log(`${active().name} sacó ${d}.`);movePlayer(currentPlayer,d,false);checkCell(active().pos);render()})}
+function animateDice(cb){soundDice();let n=0;let id=setInterval(()=>{document.getElementById('dice').textContent='🎲 '+randomDice();n++;if(n>=8){clearInterval(id);let d=randomDice();document.getElementById('dice').textContent='🎲 '+d;if(active()?.stats){active().stats.diceRolls++;if(d===1)active().stats.ones++;if(d===6)active().stats.sixes++}cb(d)}},55)}function randomDice(){return Math.floor(Math.random()*6)+1}
+function armDiceAction(label,resolver){pendingDiceAction={label,resolver};pendingAction=null;showCard('🎲','Tirada especial','Presiona el botón de dado para resolver la acción.','');render()}function resolveDiceAction(){let a=pendingDiceAction;if(!a)return;animateDice(d=>{pendingDiceAction=null;a.resolver(d);if(!gameOver&&!pendingAction&&!pendingDiceAction)endTurn();render()})}
+function movePlayer(i,steps,rr=true){let p=players[i],old=p.pos;p.pos=Math.max(0,Math.min(60,p.pos+steps));if(p.stats&&p.pos>old)p.stats.spacesMoved+=(p.pos-old);log(`${p.name} va de ${old} a ${p.pos}.`);if(p.pos>=60&&!gameOver)prepareBoss();if(rr)render()}function moveAll(steps){players.forEach((p,i)=>{if(!p.dead)movePlayer(i,steps,false)});render()}function moveLastPlayer(steps){let l=players.map((p,i)=>({...p,i})).filter(p=>!p.dead),m=Math.min(...l.map(p=>p.pos)),idx=l.find(p=>p.pos===m).i;movePlayer(idx,steps,true)}
+function addCoins(i,amount){let p=players[i];p.coins=Math.max(0,p.coins+amount);if(p.stats&&amount>0)p.stats.coinsEarned+=amount;log(amount>=0?`${p.name} gana ${amount} moneda(s).`:`${p.name} pierde ${Math.abs(amount)} moneda(s).`);render()}function addLife(i,amount){let p=players[i];p.lives=Math.min(3,p.lives+amount);log(`${p.name} queda con ${p.lives} vida(s).`);render()}
+function loseLife(i){let p=players[i];if(p.item?.key==='shield'){p.item=null;p.stats.itemsUsed++;narrate(`${p.name} usa su escudo y evita perder vida.`);showCard('🛡️','Escudo usado','Evitaste perder 1 vida.','card-power');render();return}if(p.emoji==='🦸'&&p.abilityUses>0){p.abilityUses--;p.stats.abilitiesUsed++;narrate(`${p.name} usa poder de Superhéroe y evita perder 1 vida.`);showCard('🦸','Poder de Superhéroe','Evitaste perder 1 vida.','card-help');render();return}p.lives--;p.stats.livesLost++;log(`${p.name} pierde 1 vida. Queda con ${p.lives}.`);if(p.lives<=0){p.lives=0;p.dead=true;soundNo();showCard('💀','Jugador eliminado',`${p.name} quedó eliminado. Puede volver con revivir.`, 'card-trap')}render()}
+function handleTotalDefeat(){if(difficulty==='Fácil'&&!lastBossFail){lastBossFail=true;let revived=players[0];revived.dead=false;revived.lives=1;revived.pos=Math.max(0,Math.min(55,revived.pos));showCard('✨','Última Esperanza',`${revived.name} vuelve con 1 vida para un último intento.`, 'card-help');narrate('La última esperanza aparece para ayudar al equipo.');render();return}loseGame()}
+function loseGame(){gameOver=true;gameWon=false;pendingAction=null;pendingDiceAction=null;showCard('💔','Derrota','Todos los jugadores quedaron eliminados. Reinicien para intentarlo otra vez.','card-trap');showEndStats(false)}
+function checkCell(pos){let data=specialFor(pos);if(!data){let amount=1;if(active().emoji==='👧'&&active().abilityUses>0){active().abilityUses--;active().stats.abilitiesUsed++;amount=2;narrate(`${active().name} usa poder de Aventurera: +1 moneda extra.`)}addCoins(currentPlayer,amount);showCard('🪙','Casilla blanca',`${active().name} gana ${amount} moneda(s).`, '');endTurn();return}let label=data[1];if(label==='SALIDA'){showCard('🎮','Salida','Comienza la aventura.','');endTurn()}else if(label==='Pierde 🪙'){if(active().emoji==='🧑‍🚀'&&active().abilityUses>0){active().abilityUses--;active().stats.abilitiesUsed++;showCard('🧑‍🚀','Poder Astronauta','Evitaste perder moneda en casilla roja.','card-help');endTurn()}else prepareSimple('🔥','Casilla roja','Presiona ✅ para perder 1 moneda.',()=>{active().stats.redCellsHit++;addCoins(currentPlayer,-1)},()=>log('Casilla roja evitada.'),'card-trap')}else if(label==='Cofre')prepareChest();else if(label==='Moneda')prepareSimple('🪙','Moneda','Presiona ✅ para ganar 1 moneda.',()=>addCoins(currentPlayer,1),()=>log('Moneda no tomada.'),'');else if(label==='Desafío')prepareCard('desafio');else if(label==='Avanza')prepareSimple('⬆️','Avanza','Presiona ✅ para avanzar 2 casillas.',()=>movePlayer(currentPlayer,2),()=>log('Avance cancelado.'),'');else if(label==='Bonus')prepareCard('bonus');else if(label==='Duelo')prepareCard('duelo');else if(label==='Retrocede'){if(active().emoji==='🥷'&&active().abilityUses>0){active().abilityUses--;active().stats.abilitiesUsed++;showCard('🥷','Poder Ninja','Evitaste el retroceso.','card-help');endTurn()}else prepareSimple('⬇️','Retrocede','Presiona ✅ para retroceder 2 casillas.',()=>movePlayer(currentPlayer,-2),()=>log('Retroceso evitado.'),'')}else if(label==='Ayuda')prepareCard('ayuda');else if(label==='Sorpresa')prepareRandomAny();else if(label==='Trampa'){if(active().emoji==='🥷'&&active().abilityUses>0){active().abilityUses--;active().stats.abilitiesUsed++;showCard('🥷','Poder Ninja','Evitaste la trampa.','card-help');endTurn()}else prepareCard('trampa')}else if(label==='Portal')preparePortal(pos);else if(label==='Estororo')prepareMinion(pos);else if(label==='Tesoro')prepareSimple('💰','Tesoro final','Presiona ✅ para ganar 3 monedas.',()=>{active().stats.treasuresFound++;addCoins(currentPlayer,3)},()=>log('Tesoro no tomado.'),'card-bonus');else if(label==='JEFE')prepareBoss()}
+function prepareSimple(icon,title,text,onOk,onNo,cls){soundCard();showCard(icon,title,text,cls);pendingAction={onOk,onNo,keepTurn:false,type:'simple'};render()}function preparePortal(pos){let target=pos===29?47:pos===47?59:null;if(!target){addCoins(currentPlayer,1);showCard('🪙','Portal cerrado','Este portal entrega 1 moneda.','');endTurn();return}prepareSimple('🌀','Portal',`Presiona ✅ para viajar a la casilla ${target}.`,()=>{active().stats.portalsUsed++;players[currentPlayer].pos=target;narrate(`${active().name} cruza un portal brillante.`);checkCell(target)},()=>log('Portal no usado.'),'')}
+function prepareChest(){let opts=[['🪙','Cofre de monedas','Ganas 3 monedas.',()=>addCoins(currentPlayer,3)],['❤️','Cofre de vida','Recuperas 1 vida.',()=>addLife(currentPlayer,1)],['💎','Gema mágica','Guardas una gema para cambiar una carta.',()=>setItem({key:'gem',emoji:'💎',name:'Gema'})],['🛡️','Escudo','Guardas un escudo para evitar perder vida.',()=>setItem({key:'shield',emoji:'🛡️',name:'Escudo'})],['⚠️','Cofre trampa','Pierdes 1 moneda.',()=>addCoins(currentPlayer,-1)],['🌀','Cofre portal','Avanzas al siguiente portal.',()=>moveToNextPortal()]];let c=opts[Math.floor(Math.random()*opts.length)];active().stats.chestsOpened++;prepareSimple(c[0],c[1],`Presiona ✅: ${c[2]}`,c[3],()=>log('Cofre cerrado.'),'card-bonus')}
+function setItem(item){active().item=item;narrate(`${active().name} guarda ${item.name} en su inventario.`);render()}
+function prepareMinion(cell){if(defeatedMinions.has(cell)){addCoins(currentPlayer,1);endTurn();return}let emoji=minionEmojis[Math.floor(Math.random()*minionEmojis.length)];let text=`${active().name} enfrenta a Estororo. Presiona ✅ y luego Lanzar dado. Con 4, 5 o 6 lo derrotas.`;if(active().emoji==='🧞'&&active().abilityUses>0)text+=' El Genio puede usar su habilidad para vencerlo automáticamente.';showCard(emoji,'Estororo',text,'card-duel');pendingAction={onOk:()=>{if(active().emoji==='🧞'&&active().abilityUses>0){active().abilityUses--;active().stats.abilitiesUsed++;minionRoll(6,cell,emoji,true)}else armDiceAction(`${emoji} Lanzar contra Estororo`,d=>minionRoll(d,cell,emoji,false))},onNo:()=>log('Evitaste enfrentar a Estororo.'),keepTurn:false,type:'minion'};render()}
+function prepareBoss(){showCard(boss.emoji,boss.name,`${boss.name} tiene ${bossLives} vida(s). Presiona ✅ y luego Lanzar dado. Solo con 1 o 6 le quitas 1 vida. Si fallas, pierdes 1 vida y retrocedes 10 casillas.`, 'card-boss');pendingAction={onOk:()=>armDiceAction(`${boss.emoji} Lanzar contra ${boss.name}`,finalBossRoll),onNo:()=>{loseLife(currentPlayer);if(!active().dead)movePlayer(currentPlayer,-10)},keepTurn:false,type:'boss'};render()}
+function prepareRandomAny(){let types=['desafio','bonus','trampa','duelo','ayuda','power'];prepareCard(types[Math.floor(Math.random()*types.length)])}function prepareCard(type){currentCardType=type;soundCard();let list=cards[type],card=list[Math.floor(Math.random()*list.length)];showCard(card[0],card[1],card[2],`card-${type}`);log(`Carta: ${card[1]}.`);pendingAction={onOk:()=>{if(type==='desafio'){active().stats.challengesWon++;if(active().emoji==='🧜'&&active().abilityUses>0){active().abilityUses--;active().stats.abilitiesUsed++;addCoins(currentPlayer,1);narrate(`${active().name} usa poder de Sirena: moneda extra por desafío.`)}}if(type==='trampa')active().stats.trapsHit++;if(type==='bonus')active().stats.bonusUsed++;card[3]()},onNo:()=>{if(type==='desafio')active().stats.challengesFailed++;card[4]()},keepTurn:card[1]==='Dado Mágico',type};render()}
+function resolvePending(ok){if(!pendingAction||gameOver)return;let a=pendingAction;pendingAction=null;if(ok){soundOk();log('Acción confirmada con ✅.');a.onOk()}else{soundNo();log('Acción marcada con ❌.');a.onNo()}if(!gameOver&&!a.keepTurn&&!pendingDiceAction&&!pendingAction)endTurn();render()}
+function changeCard(){if(active().emoji==='🧙'&&active().abilityUses>0&&pendingAction&&pendingAction.type&&cards[pendingAction.type]){active().abilityUses--;active().stats.abilitiesUsed++;narrate(`${active().name} cambia la carta con magia.`);pendingAction=null;prepareCard(currentCardType)}}
+function bonusReroll(){allowSamePlayerRoll=true;pendingAction=null;showCard('🎲','Lanza otra vez','Presiona Lanzar dado para jugar nuevamente con el mismo jugador.','');render()}function moveToNextPortal(){let portals=[29,47,59],next=portals.find(p=>p>active().pos)||59;active().pos=next;log(`${active().name} avanza al portal ${next}.`);checkCell(next)}
+function duelRoll(d,need,reward,text){log(`Duelo: salió ${d}.`);if(d>=need){soundOk();log(text);reward()}else{soundNo();log('No ganaste el duelo.')}}function shadowDuelRoll(d){log(`Duelo contra sombra: salió ${d}.`);if(d<=2){soundNo();movePlayer(currentPlayer,-1)}else{soundOk();addCoins(currentPlayer,1)}}function enemyHiddenRoll(d){log(`Enemigo escondido: salió ${d}.`);if(d<=3)loseLife(currentPlayer);else{soundOk();log('Esquivaste al enemigo.')}}function minionRoll(d,cell,emoji,auto=false){active().stats.estororoFights++;log(`Estororo ${emoji} en casilla ${cell}: salió ${d}.`);if(d>=4||auto){active().stats.minionsDefeated++;soundOk();showCard('✅','Estororo derrotado','Ganaste el combate. La casilla queda blanca.','card-duel')}else{soundNo();loseLife(currentPlayer);if(!gameOver)showCard(emoji,'Estororo gana','Pierdes 1 vida, pero Estororo desaparece.','card-trap')}defeatedMinions.add(cell);render()}
+function finalBossRoll(d){log(`Contra ${boss.name}: salió ${d}.`);if(d===1||d===6){active().stats.bossHits++;bossLives--;soundOk();if(bossLives<=0){gameOver=true;gameWon=true;soundWin();showCard('🏆','¡Victoria Pixel!',`Derrotaron a ${boss.name}.`,'card-boss');confetti();showEndStats(true)}else{showCard(boss.emoji,'¡Golpe crítico!',`${boss.name} pierde 1 vida. Le queda ${bossLives}.`,'card-boss')}}else{soundNo();loseLife(currentPlayer);if(!active().dead)movePlayer(currentPlayer,-10);if(!gameOver)showCard(boss.emoji,'Contraataque',`No salió 1 ni 6. Pierdes 1 vida y retrocedes 10 casillas.`,'card-boss')}render()}
+function useAbility(){let p=active();if(p.abilityUses<=0||pendingDiceAction||gameOver)return;if(p.emoji==='🧒'){p.abilityUses--;p.stats.abilitiesUsed++;allowSamePlayerRoll=true;showCard('🧒','Habilidad Explorador','Puedes lanzar el dado otra vez gratis.','card-help');render()}else if(p.emoji==='🧚'){let target=players.findIndex((x,i)=>i!==currentPlayer&&!x.dead&&x.lives<3);if(target<0){log('No hay aliado que curar.');return}p.abilityUses--;p.stats.abilitiesUsed++;addLife(target,1);showCard('🧚','Habilidad Hada',`${players[target].name} recupera 1 vida.`, 'card-help')}else if(p.emoji==='🧙'){changeCard()}else{showCard('✨','Habilidad automática',abilities[p.emoji][1]+' Se activa cuando corresponde.','card-help')}}
+function buyReroll(){if(blockedShop())return;if(active().coins>=1){active().coins--;active().stats.coinsSpent++;allowSamePlayerRoll=true;soundOk();log(`${active().name} compra repetir dado.`);render()}else{soundNo();log('No tienes monedas suficientes.')}}function buyLife(){if(blockedShop())return;if(active().coins>=3&&active().lives<3){active().coins-=3;active().stats.coinsSpent+=3;active().stats.livesBought++;addLife(currentPlayer,1)}else{soundNo();log('Necesitas 3 monedas y tener menos de 3 vidas.')}}function reviveFromShop(){if(blockedShop())return;let dead=players.findIndex(p=>p.dead);if(dead<0){soundNo();log('No hay jugadores eliminados.');return}if(active().coins<5){soundNo();log('Necesitas 5 monedas para revivir.');return}active().coins-=5;active().stats.coinsSpent+=5;active().stats.revivesGiven++;revivePlayer(dead);render()}function reviveBonus(){let dead=players.findIndex(p=>p.dead);if(dead<0){addCoins(currentPlayer,2);log('No había eliminados: ganas 2 monedas.')}else revivePlayer(dead)}function revivePlayer(idx){let min=Math.min(...living().map(p=>p.pos));players[idx].dead=false;players[idx].lives=2;players[idx].pos=Math.max(0,min-5);players[idx].stats.revivalsReceived++;soundOk();showCard('✨','Jugador revivido',`${players[idx].name} vuelve con 2 vidas.`, 'card-help')}function blockedShop(){if(gameOver||pendingAction||pendingDiceAction){log('Primero resuelve la acción pendiente.');return true}if(active().dead){log('Jugador eliminado no puede comprar.');return true}return false}
+function checkMission(){if(!activeMission)return;let p=active();if(!p.missionDone&&activeMission[1](p)){p.missionDone=true;narrate(`${p.name} completó misión: ${activeMission[0]}. Premio: ${activeMission[2]}.`);activeMission[3]()}}
+const cards={desafio:[['❓','Canción de la Mosca','Canta la canción de la mosca de Cachureos.',()=>addCoins(currentPlayer,1),()=>log('Desafío no completado.')],['❓','Sonido Secreto','Haz un sonido de videojuego.',()=>movePlayer(currentPlayer,1),()=>log('Desafío no completado.')],['❓','Animal Misterioso','Imita un animal sin hablar.',()=>addCoins(currentPlayer,1),()=>log('Desafío no completado.')],['❓','Héroe Inventado','Inventa el nombre de un héroe pixelado.',()=>addCoins(currentPlayer,1),()=>log('Desafío no completado.')],['❓','Dibujo Invisible','Dibuja una figura en el aire.',()=>movePlayer(currentPlayer,1),()=>log('Desafío no completado.')],['❓','Adivinanza Libre','Di una adivinanza.',()=>addCoins(currentPlayer,1),()=>log('Nadie acertó.')],['❓','Objeto Secreto','Da una pista sobre un objeto de la casa.',()=>addCoins(currentPlayer,1),()=>log('No adivinaron.')],['❓','Salto de Plataforma','Actúa como si saltaras un obstáculo.',()=>movePlayer(currentPlayer,1),()=>log('Desafío no completado.')],['❓','Gato Juanito','Canta la canción del Gato Juanito.',()=>addCoins(currentPlayer,1),()=>log('Desafío no completado.')],['❓','Waka Waka','Canta o baila un pedacito de Waka Waka.',()=>movePlayer(currentPlayer,1),()=>log('Desafío no completado.')],['❓','Bloque en el Aire','Imita a Mario destruyendo un bloque en el aire.',()=>addCoins(currentPlayer,1),()=>log('Desafío no completado.')],['❓','Personaje de Hielo','Tiene poderes de hielo y vive en un reino nevado.',()=>addCoins(currentPlayer,1),()=>log('No adivinaron.')],['❓','Vaquero de Juguete','Usa sombrero y siempre cuida a su dueño.',()=>addCoins(currentPlayer,1),()=>log('No adivinaron.')],['❓','Pez Perdido','Vive en el mar y su papá lo busca.',()=>addCoins(currentPlayer,1),()=>log('No adivinaron.')],['❓','León Valiente','Es cachorro de león y aprende a ser rey.',()=>movePlayer(currentPlayer,1),()=>log('No adivinaron.')],['❓','Tres Cosas Rojas','Nombra 3 cosas rojas.',()=>addCoins(currentPlayer,1),()=>log('No completado.')],['❓','Tres Cosas Azules','Nombra 3 cosas azules.',()=>addCoins(currentPlayer,1),()=>log('No completado.')],['❓','Tres Cosas Amarillas','Nombra 3 cosas amarillas.',()=>addCoins(currentPlayer,1),()=>log('No completado.')],['❓','Tres Cosas Verdes','Nombra 3 cosas verdes.',()=>addCoins(currentPlayer,1),()=>log('No completado.')],['❓','Palabra en Inglés','Di 3 palabras en inglés.',()=>addCoins(currentPlayer,1),()=>log('No completado.')],['👨‍👩‍👧','Baile Pixel','Todos bailan 10 segundos.',()=>addCoins(currentPlayer,2),()=>log('No completado.')],['😂','Cara Divertida','Todos hacen una cara divertida.',()=>addCoins(currentPlayer,1),()=>log('No completado.')]],bonus:[['⭐','Súper Salto','Avanza 3 casillas.',()=>movePlayer(currentPlayer,3),()=>log('Cancelado.')],['⭐','Moneda Dorada','Gana 2 monedas.',()=>addCoins(currentPlayer,2),()=>log('Cancelado.')],['⭐','Estrella Brillante','Todos avanzan 1 casilla.',()=>moveAll(1),()=>log('Cancelado.')],['⭐','Dado Mágico','Lanza nuevamente.',()=>bonusReroll(),()=>log('Cancelado.')],['⭐','Turbo Pixel','El más atrasado avanza 3 casillas.',()=>moveLastPlayer(3),()=>log('Cancelado.')],['⭐','Revivir Aliado','Revive a un eliminado; si no hay, gana 2 monedas.',()=>reviveBonus(),()=>log('Cancelado.')],['⭐','Botín Pixel','Gana 4 monedas.',()=>addCoins(currentPlayer,4),()=>log('Cancelado.')],['⭐','Regalo Familiar','Cada jugador vivo gana 1 moneda.',()=>players.forEach((p,i)=>{if(!p.dead)addCoins(i,1)}),()=>log('Cancelado.')]],trampa:[['⚠️','Nube Traviesa','Retrocede 2 casillas.',()=>movePlayer(currentPlayer,-2),()=>log('Evitada.')],['⚠️','Bloque Roto','Pierde 1 moneda.',()=>addCoins(currentPlayer,-1),()=>log('Evitada.')],['⚠️','Camino Resbaloso','Retrocede 1 casilla.',()=>movePlayer(currentPlayer,-1),()=>log('Evitada.')],['⚠️','Enemigo Escondido','Lanza dado. Si sale 1, 2 o 3, pierdes 1 vida.',()=>armDiceAction('⚠️ Lanzar contra enemigo',enemyHiddenRoll),()=>log('Evitada.')],['⚠️','Ladrón Pixel','Pierdes 2 monedas.',()=>addCoins(currentPlayer,-2),()=>log('Evitada.')],['⚠️','Piso Trampa','Pierdes 1 vida.',()=>loseLife(currentPlayer),()=>log('Evitada.')]],duelo:[['⚔️','Monstruo Verde','Con 4, 5 o 6 ganas 1 moneda.',()=>armDiceAction('⚔️ Lanzar duelo',d=>duelRoll(d,4,()=>addCoins(currentPlayer,1),'Ganaste 1 moneda.')),()=>log('Cancelado.')],['⚔️','Robot Guardián','Con 5 o 6 avanzas 2 casillas.',()=>armDiceAction('⚔️ Lanzar duelo',d=>duelRoll(d,5,()=>movePlayer(currentPlayer,2),'Avanzas 2 casillas.')),()=>log('Cancelado.')],['⚔️','Sombra Pixelada','Con 1 o 2 retrocedes 1. Con 3 a 6 ganas 1 moneda.',()=>armDiceAction('⚔️ Lanzar duelo',shadowDuelRoll),()=>log('Cancelado.')],['⚔️','Mini Jefe','Si sale 6, recuperas 1 vida.',()=>armDiceAction('⚔️ Lanzar duelo',d=>duelRoll(d,6,()=>addLife(currentPlayer,1),'Recuperas 1 vida.')),()=>log('Cancelado.')],['⚔️','Murciélago Pixel','Con 3, 4, 5 o 6 ganas 1 moneda.',()=>armDiceAction('⚔️ Lanzar duelo',d=>duelRoll(d,3,()=>addCoins(currentPlayer,1),'Ganaste 1 moneda.')),()=>log('Cancelado.')]],ayuda:[['❤️','Todos Juntos','El jugador más atrasado avanza 3 casillas.',()=>moveLastPlayer(3),()=>log('Cancelado.')],['❤️','Corazón Extra','Recuperas 1 vida.',()=>addLife(currentPlayer,1),()=>log('Cancelado.')],['❤️','Mano Amiga','Tú y el más atrasado avanzan 2 casillas.',()=>{movePlayer(currentPlayer,2);moveLastPlayer(2)},()=>log('Cancelado.')],['❤️','Equipo Unido','Cada jugador vivo gana 1 moneda.',()=>players.forEach((p,i)=>{if(!p.dead)addCoins(i,1)}),()=>log('Cancelado.')],['❤️','Curación Mágica','Elige automáticamente al vivo con menos vidas y recupéralo.',()=>{let l=living(),m=Math.min(...l.map(p=>p.lives)),idx=players.findIndex(p=>!p.dead&&p.lives===m);addLife(idx,1)},()=>log('Cancelado.')}],power:[['🛡️','Escudo','Guarda escudo para evitar perder vida.',()=>setItem({key:'shield',emoji:'🛡️',name:'Escudo'}),()=>log('Cancelado.')],['💎','Gema','Guarda gema para cambiar una carta.',()=>setItem({key:'gem',emoji:'💎',name:'Gema'}),()=>log('Cancelado.')],['👟','Botas','Avanza 2 casillas extra.',()=>movePlayer(currentPlayer,2),()=>log('Cancelado.')],['🍀','Trébol','Gana 2 monedas.',()=>addCoins(currentPlayer,2),()=>log('Cancelado.')]]};
+function buyGemChange(){if(active().item?.key==='gem'&&pendingAction&&currentCardType){active().item=null;active().stats.itemsUsed++;pendingAction=null;prepareCard(currentCardType)}}
+function narrate(msg){log('📖 '+msg)}function showCard(icon,title,text,cls=''){let c=document.getElementById('card');c.className='card-result '+cls;c.innerHTML=`<div class="big">${icon}</div><h3>${title}</h3><p>${text}</p>`}
+function checkHooks(){if(active().item?.key==='gem'&&pendingAction&&currentCardType)showCard('💎','Gema disponible',document.getElementById('card').querySelector('p').textContent+' Puedes usar la gema desde la habilidad del Mago solo si corresponde.','card-power')}
+function resetGame(){if(!confirm('¿Seguro que quieres reiniciar la partida?'))return;soundOk();hideEndStats();document.getElementById('startScreen').style.display='flex';document.getElementById('gameArea').style.display='none';document.getElementById('setupError').textContent=''}function toggleTheme(){themeIndex=(themeIndex+1)%themes.length;document.body.style.background=`linear-gradient(180deg,${themes[themeIndex][0]},${themes[themeIndex][1]})`}
+function topPlayer(metric){let best=null;players.forEach(p=>{let v=p.stats[metric]||0;if(v>0&&(!best||v>best.value))best={player:p,value:v}});return best}function showEndStats(victory){document.getElementById('endStatsContent').innerHTML=buildEndStats(victory);document.getElementById('endOverlay').style.display='flex'}function hideEndStats(){document.getElementById('endOverlay').style.display='none'}function buildEndStats(victory){let defs=[['🏆 Héroe Pixel','bossHits'],['🪙 Rey de Monedas','coinsEarned'],['⚔️ Cazador de Estororo','minionsDefeated'],['🎲 Suerte Dorada','sixes'],['❓ Maestro de Desafíos','challengesWon'],['❤️ Guardián del Equipo','revivesGiven'],['🌀 Viajero de Portales','portalsUsed'],['💰 Buscatesoros','treasuresFound'],['🎁 Abrecofres','chestsOpened'],['✨ Maestro de Habilidad','abilitiesUsed']];let ach=[];defs.forEach(d=>{let t=topPlayer(d[1]);if(t)ach.push(`${d[0]}: ${t.player.emoji} ${t.player.name} (${t.value})`)});let cards=players.map(p=>`<div class="stat-card"><h3><span class="token" style="background:${p.color}">${p.emoji}</span>${p.name} ${p.dead?'💀':''}</h3>${[['Estado',p.dead?'Eliminado':'Activo'],['Vidas',p.lives],['Monedas',p.coins],['Monedas ganadas',p.stats.coinsEarned],['Monedas gastadas',p.stats.coinsSpent],['Casillas avanzadas',p.stats.spacesMoved],['Tiradas',p.stats.diceRolls],['1 / 6',p.stats.ones+' / '+p.stats.sixes],['Desafíos ganados',p.stats.challengesWon],['Estororo derrotados',p.stats.minionsDefeated],['Golpes al villano',p.stats.bossHits],['Vidas perdidas',p.stats.livesLost],['Habilidades usadas',p.stats.abilitiesUsed],['Cofres abiertos',p.stats.chestsOpened]].map(r=>`<div class="stat-row"><span>${r[0]}</span><strong>${r[1]}</strong></div>`).join('')}</div>`).join('');return`<h2>${victory?'🏆 ¡Victoria Pixel!':'💔 Fin de la partida'}</h2><div style="text-align:center;font-weight:900">Dificultad: ${difficulty} · Turnos: ${turns} · Villano: ${boss.emoji} ${boss.name}</div><div class="achievement-box"><h3>Logros</h3><div class="achievement-list">${ach.length?ach.map(a=>`<div>${a}</div>`).join(''):'<div>No hubo logros destacados.</div>'}</div></div><h3>Estadísticas por jugador</h3><div class="stats-grid">${cards}</div>`}
+function openHelp(){document.getElementById('helpOverlay').style.display='flex'}function hideHelp(){document.getElementById('helpOverlay').style.display='none'}function closeHelp(e){if(e.target.id==='helpOverlay')hideHelp()}
+function log(msg){let b=document.getElementById('log'),it=document.createElement('div');it.textContent='• '+msg;b.prepend(it)}function confetti(){['🎉','⭐','✨','🏆','🎊'].forEach(e=>{for(let j=0;j<12;j++){let s=document.createElement('div');s.className='confetti';s.textContent=e;s.style.left=Math.random()*100+'vw';s.style.animationDelay=(Math.random()*.6)+'s';document.body.appendChild(s);setTimeout(()=>s.remove(),2400)}})}
+function ensureAudio(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)()}function beep(f=440,d=.08,t='sine',v=.08){if(!soundEnabled)return;ensureAudio();let o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type=t;o.frequency.value=f;g.gain.value=v;o.connect(g);g.connect(audioCtx.destination);o.start();g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+d);o.stop(audioCtx.currentTime+d)}function soundDice(){[180,230,170,260,210].forEach((f,i)=>setTimeout(()=>beep(f,.045,'square',.06),i*55))}function soundOk(){beep(520,.07,'triangle',.07);setTimeout(()=>beep(760,.09,'triangle',.07),90)}function soundNo(){beep(220,.08,'sawtooth',.06);setTimeout(()=>beep(160,.12,'sawtooth',.06),90)}function soundWin(){[523,659,784,1046].forEach((f,i)=>setTimeout(()=>beep(f,.12,'triangle',.08),i*130))}function soundCard(){beep(640,.06,'sine',.05);setTimeout(()=>beep(820,.06,'sine',.05),70)}function toggleSound(){soundEnabled=!soundEnabled;document.getElementById('soundButton').textContent=soundEnabled?'🔊 Sonido':'🔇 Silencio';if(soundEnabled)soundOk()}
 renderPlayerSetup();renderVillains();selectVillain(0);
 </script>
 </body>
