@@ -316,6 +316,150 @@
         grid-template-columns: repeat(2, 1fr);
       }
     }
+  
+    .help-overlay{
+      position:fixed;
+      inset:0;
+      background:rgba(15,23,42,.62);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:120;
+      padding:16px;
+    }
+    .help-modal{
+      width:min(920px,96vw);
+      max-height:88vh;
+      overflow:auto;
+      background:white;
+      border:4px solid var(--ink);
+      border-radius:24px;
+      box-shadow:0 12px 30px rgba(0,0,0,.35);
+      padding:18px;
+    }
+    .help-modal h2{
+      margin:0 0 10px;
+      text-align:center;
+      font-size:28px;
+    }
+    .help-modal h3{
+      margin:14px 0 6px;
+      font-size:18px;
+    }
+    .help-modal p,.help-modal li{
+      font-size:15px;
+      line-height:1.35;
+    }
+    .help-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+    }
+    .help-card{
+      border:2px solid var(--ink);
+      border-radius:16px;
+      background:#f9fafb;
+      padding:10px;
+    }
+    .help-table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:14px;
+    }
+    .help-table td,.help-table th{
+      border:1px solid #cbd5e1;
+      padding:6px;
+      text-align:left;
+    }
+    .close-help{
+      position:sticky;
+      bottom:0;
+      margin-top:12px;
+      font-size:18px;
+      padding:12px;
+    }
+    @media(max-width:760px){
+      .help-grid{grid-template-columns:1fr}
+      .help-modal{padding:12px;max-height:92vh}
+      .help-modal h2{font-size:22px}
+      .help-modal p,.help-modal li{font-size:13px}
+    }
+  
+    .end-overlay{
+      position:fixed;
+      inset:0;
+      background:rgba(15,23,42,.68);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:140;
+      padding:16px;
+    }
+    .end-modal{
+      width:min(1040px,96vw);
+      max-height:90vh;
+      overflow:auto;
+      background:white;
+      border:4px solid var(--ink);
+      border-radius:24px;
+      box-shadow:0 12px 30px rgba(0,0,0,.38);
+      padding:18px;
+    }
+    .end-modal h2{
+      text-align:center;
+      margin:0 0 8px;
+      font-size:30px;
+    }
+    .end-summary{
+      text-align:center;
+      font-weight:900;
+      margin-bottom:12px;
+    }
+    .stats-grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:10px;
+    }
+    .stat-card{
+      border:2px solid var(--ink);
+      border-radius:18px;
+      background:#f9fafb;
+      padding:10px;
+    }
+    .stat-card h3{
+      margin:0 0 8px;
+      font-size:18px;
+      display:flex;
+      align-items:center;
+      gap:6px;
+    }
+    .stat-row{
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:8px;
+      border-bottom:1px solid #d1d5db;
+      padding:4px 0;
+      font-size:13px;
+    }
+    .achievement-box{
+      border:3px solid var(--ink);
+      background:#fff7ed;
+      border-radius:18px;
+      padding:10px;
+      margin:10px 0;
+    }
+    .achievement-list{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:6px;
+      font-weight:900;
+      font-size:13px;
+    }
+    @media(max-width:760px){
+      .stats-grid,.achievement-list{grid-template-columns:1fr}
+      .end-modal{padding:12px;max-height:92vh}
+      .end-modal h2{font-size:22px}
+    }
   </style>
 </head>
 <body>
@@ -347,12 +491,88 @@
       <div class="shop-title">🛒 Tienda Pixel</div>
       <div class="small-actions"><button class="secondary" onclick="buyReroll()">1 🪙 repetir</button><button class="secondary" onclick="buyLife()">3 🪙 vida</button><button class="secondary" onclick="reviveFromShop()">5 🪙 revivir</button></div>
       <div class="small-actions"><button id="soundButton" class="neutral" onclick="toggleSound()">🔊 Sonido</button><button class="neutral" onclick="toggleTheme()">🌈 Mundo</button><button class="danger" onclick="resetGame()">Reiniciar</button></div>
+      <button class="neutral" onclick="openHelp()">❔ Instrucciones / Ayuda</button>
       <div id="pendingNote" class="pending-note">Acción pendiente</div>
       <div id="card" class="card-result"><div class="big">🕹️</div><h3>Listos para jugar</h3><p>Lancen el dado, avancen por el tablero y derroten al villano final.</p></div>
       <div class="action-buttons"><button id="okButton" class="ok" onclick="resolvePending(true)" disabled>✅</button><button id="noButton" class="no" onclick="resolvePending(false)" disabled>❌</button></div>
       <div id="log" class="log"></div>
     </aside>
   </main>
+
+<div id="endOverlay" class="end-overlay">
+    <div class="end-modal">
+      <div id="endStatsContent"></div>
+      <button class="primary close-help" onclick="hideEndStats()">Cerrar resumen</button>
+    </div>
+  </div>
+
+  <div id="helpOverlay" class="help-overlay" onclick="closeHelp(event)">
+    <div class="help-modal" onclick="event.stopPropagation()">
+      <h2>❔ Instrucciones / Ayuda</h2>
+      <div class="help-grid">
+        <div class="help-card">
+          <h3>🎯 Objetivo</h3>
+          <p>Los jugadores deben avanzar desde la casilla 0 hasta la casilla 60 y derrotar al villano final.</p>
+          <p>Ganan todos si un jugador vivo derrota al villano.</p>
+          <p>Pierden si todos los jugadores quedan eliminados.</p>
+        </div>
+        <div class="help-card">
+          <h3>🎲 Turno de juego</h3>
+          <ol>
+            <li>Presiona <strong>Lanzar dado</strong>.</li>
+            <li>Avanza la cantidad indicada.</li>
+            <li>Resuelve la casilla donde caes.</li>
+            <li>Si aparece una acción, confirma con ✅ o cancela con ❌.</li>
+          </ol>
+        </div>
+        <div class="help-card">
+          <h3>❤️ Vidas y eliminación</h3>
+          <p>Cada jugador comienza con 2 vidas y puede tener máximo 3.</p>
+          <p>Si un jugador llega a 0 vidas, queda eliminado. Puede volver si otro jugador lo revive.</p>
+        </div>
+        <div class="help-card">
+          <h3>🪙 Monedas</h3>
+          <p>Las monedas son individuales. Cada jugador administra sus propias monedas.</p>
+          <table class="help-table">
+            <tr><th>Acción</th><th>Costo</th></tr>
+            <tr><td>Repetir dado</td><td>1 moneda</td></tr>
+            <tr><td>Comprar 1 vida</td><td>3 monedas</td></tr>
+            <tr><td>Revivir jugador</td><td>5 monedas</td></tr>
+          </table>
+        </div>
+        <div class="help-card">
+          <h3>🗺️ Casillas</h3>
+          <table class="help-table">
+            <tr><td>Blanca</td><td>Ganas 1 moneda automáticamente.</td></tr>
+            <tr><td>🔥 Roja</td><td>Pierdes 1 moneda.</td></tr>
+            <tr><td>❓ Desafío</td><td>Realiza un reto.</td></tr>
+            <tr><td>⭐ Bonus</td><td>Saca una carta positiva.</td></tr>
+            <tr><td>⚠️ Trampa</td><td>Saca una carta negativa.</td></tr>
+            <tr><td>🌀 Portal</td><td>Te transporta a otro portal.</td></tr>
+            <tr><td>💰 Tesoro</td><td>Ganas 3 monedas.</td></tr>
+          </table>
+        </div>
+        <div class="help-card">
+          <h3>👹 Estororo</h3>
+          <p>Aparece en 4 casillas aleatorias por partida.</p>
+          <p>Para derrotarlo, presiona ✅ y luego <strong>Lanzar dado</strong>. Con 4, 5 o 6 ganas. Si sale 1, 2 o 3, pierdes 1 vida.</p>
+          <p>Después del combate, Estororo desaparece y la casilla queda normal.</p>
+        </div>
+        <div class="help-card">
+          <h3>👾 Villano final</h3>
+          <p>El villano tiene 2 vidas.</p>
+          <p>Solo recibe daño si sacas <strong>1 o 6</strong>.</p>
+          <p>Si fallas, pierdes 1 vida y retrocedes 10 casillas. Si quedas con 0 vidas, eres eliminado inmediatamente.</p>
+        </div>
+        <div class="help-card">
+          <h3>🛒 Tienda Pixel</h3>
+          <p>La tienda puede usarse cuando no hay acciones pendientes.</p>
+          <p>Sirve para repetir dado, comprar vidas o revivir jugadores eliminados.</p>
+        </div>
+      </div>
+      <button class="primary close-help" onclick="hideHelp()">Cerrar ayuda</button>
+    </div>
+  </div>
 
 <script>
 let playerCount=2, players=[], currentPlayer=0, bossLives=2, gameOver=false, pendingAction=null, pendingDiceAction=null, soundEnabled=true, audioCtx=null, defeatedMinions=new Set(), minionCells=[], boss={emoji:'👾',name:'Peroso'}, themeIndex=0;
@@ -368,8 +588,9 @@ function setPlayerCount(n){playerCount=n; renderPlayerSetup()}
 function renderPlayerSetup(){const box=document.getElementById('playerSetup'); box.innerHTML=''; for(let i=0;i<playerCount;i++){box.innerHTML+=`<div class="player-config"><input id="pname${i}" placeholder="Nombre J${i+1}"/><select id="pemoji${i}">${playerEmojis.map(e=>`<option value="${e}">${e}</option>`).join('')}</select><select id="pcolor${i}">${colorOptions.map(c=>`<option value="${c[1]}">${c[0]}</option>`).join('')}</select></div>`}}
 function renderVillains(){const box=document.getElementById('villainSetup'); box.innerHTML=villains.map((v,i)=>`<div class="villain-card ${i===0?'selected':''}" onclick="selectVillain(${i})" id="villain${i}"><div style="font-size:34px">${v[0]}</div>${v[1]}</div>`).join('')}
 function selectVillain(i){boss={emoji:villains[i][0],name:villains[i][1]}; villains.forEach((_,idx)=>document.getElementById('villain'+idx).classList.toggle('selected',idx===i))}
+function makeStats(){return {diceRolls:0,ones:0,sixes:0,spacesMoved:0,coinsEarned:0,coinsSpent:0,livesLost:0,livesBought:0,challengesWon:0,challengesFailed:0,minionsDefeated:0,estororoFights:0,bossHits:0,trapsHit:0,redCellsHit:0,revivesGiven:0,revivalsReceived:0,portalsUsed:0,treasuresFound:0,bonusUsed:0}}
 function validateSetup(){const names=[],emojis=[],colors=[]; for(let i=0;i<playerCount;i++){const name=document.getElementById('pname'+i).value.trim(); const emoji=document.getElementById('pemoji'+i).value; const color=document.getElementById('pcolor'+i).value; if(!name)return `Falta el nombre del Jugador ${i+1}.`; names.push(name); emojis.push(emoji); colors.push(color)} if(new Set(emojis).size!==emojis.length)return 'No se pueden repetir emojis.'; if(new Set(colors).size!==colors.length)return 'No se pueden repetir colores.'; return ''}
-function startGame(){const err=validateSetup(); document.getElementById('setupError').textContent=err; if(err)return; players=[]; for(let i=0;i<playerCount;i++){players.push({name:document.getElementById('pname'+i).value.trim(),emoji:document.getElementById('pemoji'+i).value,color:document.getElementById('pcolor'+i).value,pos:0,lives:2,coins:0,dead:false})} currentPlayer=0; bossLives=2; gameOver=false; pendingAction=null; pendingDiceAction=null; defeatedMinions=new Set(); minionCells=randomMinions(); document.getElementById('startScreen').style.display='none'; document.getElementById('gameArea').style.display='grid'; document.getElementById('bossEmoji').textContent=boss.emoji; document.getElementById('bossName').textContent=boss.name; document.getElementById('log').innerHTML=''; document.getElementById('dice').textContent='🎲'; initBoard(); showCard('🕹️','Partida iniciada',`Lleguen a la casilla 60 y derroten a ${boss.name}.`,''); log(`Partida iniciada contra ${boss.name}.`); render()}
+function startGame(){const err=validateSetup(); document.getElementById('setupError').textContent=err; if(err)return; players=[]; for(let i=0;i<playerCount;i++){players.push({name:document.getElementById('pname'+i).value.trim(),emoji:document.getElementById('pemoji'+i).value,color:document.getElementById('pcolor'+i).value,pos:0,lives:2,coins:0,dead:false,stats:makeStats()})} currentPlayer=0; bossLives=2; gameOver=false; pendingAction=null; pendingDiceAction=null; defeatedMinions=new Set(); minionCells=randomMinions(); document.getElementById('startScreen').style.display='none'; document.getElementById('gameArea').style.display='grid'; document.getElementById('bossEmoji').textContent=boss.emoji; document.getElementById('bossName').textContent=boss.name; document.getElementById('log').innerHTML=''; document.getElementById('dice').textContent='🎲'; initBoard(); showCard('🕹️','Partida iniciada',`Lleguen a la casilla 60 y derroten a ${boss.name}.`,''); log(`Partida iniciada contra ${boss.name}.`); render()}
 function randomMinions(){const blocked=new Set([...Object.keys(fixedSpecial).map(Number),...redCells]); const pool=[]; for(let i=1;i<59;i++) if(!blocked.has(i)) pool.push(i); const out=[]; while(out.length<4){const idx=Math.floor(Math.random()*pool.length); out.push(pool.splice(idx,1)[0])} return out.sort((a,b)=>a-b)}
 function specialFor(n){if(minionCells.includes(n)&&!defeatedMinions.has(n))return ['👹','Estororo','minion']; if(redCells.includes(n))return ['🔥','Pierde 🪙','redcell']; if(fixedSpecial[n]){const s=[...fixedSpecial[n]]; if(n===60)s[0]=boss.emoji; return s} return null}
 function worldClass(n){if(n<=15)return'world1';if(n<=30)return'world2';if(n<=45)return'world3';return'world4'}
@@ -380,25 +601,25 @@ function active(){return players[currentPlayer]}
 function nextLivingIndex(start){for(let k=1;k<=players.length;k++){const idx=(start+k)%players.length;if(!players[idx].dead)return idx}return start}
 function endTurn(){if(gameOver)return; currentPlayer=nextLivingIndex(currentPlayer); if(active().pos===60)prepareBoss(); render()}
 function rollDice(){if(gameOver||pendingAction)return; if(active().dead){endTurn();return} if(pendingDiceAction){resolveDiceAction();return} if(active().pos===60){prepareBoss();return} animateDice(dice=>{log(`${active().name} sacó ${dice}.`); movePlayer(currentPlayer,dice,false); checkCell(active().pos); render()})}
-function animateDice(cb){soundDice();let n=0;const id=setInterval(()=>{document.getElementById('dice').textContent='🎲 '+randomDice();n++;if(n>=8){clearInterval(id);const d=randomDice();document.getElementById('dice').textContent='🎲 '+d;cb(d)}},55)}
+function animateDice(cb){soundDice();let n=0;const id=setInterval(()=>{document.getElementById('dice').textContent='🎲 '+randomDice();n++;if(n>=8){clearInterval(id);const d=randomDice();document.getElementById('dice').textContent='🎲 '+d;if(active()&&active().stats){active().stats.diceRolls++; if(d===1)active().stats.ones++; if(d===6)active().stats.sixes++;}cb(d)}},55)}
 function randomDice(){return Math.floor(Math.random()*6)+1}
 function armDiceAction(label,resolver){pendingDiceAction={label,resolver};pendingAction=null;showCard('🎲','Tirada especial','Presiona el botón de dado para resolver la acción.','');render()}
 function resolveDiceAction(){const action=pendingDiceAction;if(!action)return; animateDice(dice=>{pendingDiceAction=null; action.resolver(dice); if(!gameOver)endTurn(); render()})}
-function movePlayer(i,steps,rerender=true){const p=players[i],old=p.pos;p.pos=Math.max(0,Math.min(60,p.pos+steps));log(`${p.name} va de ${old} a ${p.pos}.`);if(p.pos>=60&&!gameOver)prepareBoss();if(rerender)render()}
+function movePlayer(i,steps,rerender=true){const p=players[i],old=p.pos;p.pos=Math.max(0,Math.min(60,p.pos+steps));if(p.stats&&p.pos>old)p.stats.spacesMoved+=(p.pos-old);log(`${p.name} va de ${old} a ${p.pos}.`);if(p.pos>=60&&!gameOver)prepareBoss();if(rerender)render()}
 function moveAll(steps){players.forEach((p,i)=>{if(!p.dead)movePlayer(i,steps,false)});render()}
 function moveLastPlayer(steps){const living=players.map((p,i)=>({...p,i})).filter(p=>!p.dead); const min=Math.min(...living.map(p=>p.pos)); const idx=living.find(p=>p.pos===min).i; movePlayer(idx,steps,true)}
-function addCoins(i,amount){const p=players[i];p.coins=Math.max(0,p.coins+amount);log(amount>=0?`${p.name} gana ${amount} moneda(s).`:`${p.name} pierde ${Math.abs(amount)} moneda(s).`);render()}
+function addCoins(i,amount){const p=players[i];p.coins=Math.max(0,p.coins+amount);if(p.stats&&amount>0)p.stats.coinsEarned+=amount;log(amount>=0?`${p.name} gana ${amount} moneda(s).`:`${p.name} pierde ${Math.abs(amount)} moneda(s).`);render()}
 function addLife(i,amount){const p=players[i];p.lives=Math.min(3,p.lives+amount);log(`${p.name} queda con ${p.lives} vida(s).`);render()}
-function loseLife(i){const p=players[i];p.lives-=1;log(`${p.name} pierde 1 vida. Queda con ${p.lives}.`); if(p.lives<=0){p.lives=0;p.dead=true;soundNo();showCard('💀','Jugador eliminado',`${p.name} quedó eliminado, pero puede ser revivido con 5 monedas.`, 'card-trap')} render()}
-function loseGame(){gameOver=true;pendingAction=null;pendingDiceAction=null;showCard('💔','Derrota','Todos los jugadores quedaron eliminados. Reinicien para intentarlo otra vez.','card-trap')}
+function loseLife(i){const p=players[i];p.lives-=1;if(p.stats)p.stats.livesLost++;log(`${p.name} pierde 1 vida. Queda con ${p.lives}.`); if(p.lives<=0){p.lives=0;p.dead=true;soundNo();showCard('💀','Jugador eliminado',`${p.name} quedó eliminado, pero puede ser revivido con 5 monedas.`, 'card-trap')} render()}
+function loseGame(){gameOver=true;pendingAction=null;pendingDiceAction=null;showCard('💔','Derrota','Todos los jugadores quedaron eliminados. Reinicien para intentarlo otra vez.','card-trap');showEndStats(false)}
 function checkCell(pos){const data=specialFor(pos); if(!data||data[1]==='Vencido'){addCoins(currentPlayer,1); showCard('🪙','Casilla blanca',`${active().name} gana 1 moneda.`, ''); endTurn(); return} const label=data[1];
- if(label==='SALIDA'){showCard('🎮','Salida','Comienza la aventura.','');endTurn()} else if(label==='Pierde 🪙')prepareSimple('🔥','Casilla roja','Presiona ✅ para perder 1 moneda.',()=>addCoins(currentPlayer,-1),()=>log('Casilla roja evitada.'),'card-trap'); else if(label==='Moneda')prepareSimple('🪙','Moneda','Presiona ✅ para ganar 1 moneda.',()=>addCoins(currentPlayer,1),()=>log('Moneda no tomada.'),''); else if(label==='Desafío')prepareCard('desafio'); else if(label==='Avanza')prepareSimple('⬆️','Avanza','Presiona ✅ para avanzar 2 casillas.',()=>movePlayer(currentPlayer,2),()=>log('Avance cancelado.'),''); else if(label==='Bonus')prepareCard('bonus'); else if(label==='Duelo')prepareCard('duelo'); else if(label==='Retrocede')prepareSimple('⬇️','Retrocede','Presiona ✅ para retroceder 2 casillas.',()=>movePlayer(currentPlayer,-2),()=>log('Retroceso evitado.'),''); else if(label==='Ayuda')prepareCard('ayuda'); else if(label==='Sorpresa')prepareRandomAny(); else if(label==='Trampa')prepareCard('trampa'); else if(label==='Portal')preparePortal(pos); else if(label==='Estororo')prepareMinion(pos); else if(label==='Tesoro')prepareSimple('💰','Tesoro final','Presiona ✅ para ganar 3 monedas.',()=>addCoins(currentPlayer,3),()=>log('Tesoro no tomado.'),'card-bonus'); else if(label==='JEFE')prepareBoss()}
+ if(label==='SALIDA'){showCard('🎮','Salida','Comienza la aventura.','');endTurn()} else if(label==='Pierde 🪙')prepareSimple('🔥','Casilla roja','Presiona ✅ para perder 1 moneda.',()=>{active().stats.redCellsHit++;addCoins(currentPlayer,-1)},()=>log('Casilla roja evitada.'),'card-trap'); else if(label==='Moneda')prepareSimple('🪙','Moneda','Presiona ✅ para ganar 1 moneda.',()=>addCoins(currentPlayer,1),()=>log('Moneda no tomada.'),''); else if(label==='Desafío')prepareCard('desafio'); else if(label==='Avanza')prepareSimple('⬆️','Avanza','Presiona ✅ para avanzar 2 casillas.',()=>movePlayer(currentPlayer,2),()=>log('Avance cancelado.'),''); else if(label==='Bonus')prepareCard('bonus'); else if(label==='Duelo')prepareCard('duelo'); else if(label==='Retrocede')prepareSimple('⬇️','Retrocede','Presiona ✅ para retroceder 2 casillas.',()=>movePlayer(currentPlayer,-2),()=>log('Retroceso evitado.'),''); else if(label==='Ayuda')prepareCard('ayuda'); else if(label==='Sorpresa')prepareRandomAny(); else if(label==='Trampa')prepareCard('trampa'); else if(label==='Portal')preparePortal(pos); else if(label==='Estororo')prepareMinion(pos); else if(label==='Tesoro')prepareSimple('💰','Tesoro final','Presiona ✅ para ganar 3 monedas.',()=>{active().stats.treasuresFound++;addCoins(currentPlayer,3)},()=>log('Tesoro no tomado.'),'card-bonus'); else if(label==='JEFE')prepareBoss()}
 function prepareSimple(icon,title,text,onOk,onNo,cls){soundCard();showCard(icon,title,text,cls);pendingAction={onOk,onNo,keepTurn:false};render()}
-function preparePortal(pos){const target=pos===29?47:pos===47?59:null; if(!target){addCoins(currentPlayer,1);showCard('🪙','Portal cerrado','Este portal ya no lleva al jefe. Ganas 1 moneda.','');endTurn();return} prepareSimple('🌀','Portal',`Presiona ✅ para viajar a la casilla ${target}.`,()=>{players[currentPlayer].pos=target;log(`${active().name} viaja por portal a ${target}.`);checkCell(target)},()=>log('Portal no usado.'),'')}
+function preparePortal(pos){const target=pos===29?47:pos===47?59:null; if(!target){addCoins(currentPlayer,1);showCard('🪙','Portal cerrado','Este portal ya no lleva al jefe. Ganas 1 moneda.','');endTurn();return} prepareSimple('🌀','Portal',`Presiona ✅ para viajar a la casilla ${target}.`,()=>{active().stats.portalsUsed++;players[currentPlayer].pos=target;log(`${active().name} viaja por portal a ${target}.`);checkCell(target)},()=>log('Portal no usado.'),'')}
 function prepareMinion(cell){if(defeatedMinions.has(cell)){addCoins(currentPlayer,1);endTurn();return} const emoji=minionEmojis[Math.floor(Math.random()*minionEmojis.length)];showCard(emoji,'Estororo',`${active().name} enfrenta a Estororo. Presiona ✅ y luego Lanzar dado. Con 4, 5 o 6 lo derrotas. Si gana, pierdes 1 vida, pero desaparece.`, 'card-duel');pendingAction={onOk:()=>armDiceAction(`${emoji} Lanzar contra Estororo`,dice=>minionRoll(dice,cell,emoji)),onNo:()=>log('Evitaste enfrentar a Estororo.'),keepTurn:false};render()}
 function prepareBoss(){showCard(boss.emoji,boss.name,`${boss.name} tiene ${bossLives} vida(s). Presiona ✅ y luego Lanzar dado. Solo con 1 o 6 le quitas 1 vida. Si fallas, pierdes 1 vida y retrocedes 10 casillas.`, 'card-boss');pendingAction={onOk:()=>armDiceAction(`${boss.emoji} Lanzar contra ${boss.name}`,finalBossRoll),onNo:()=>{loseLife(currentPlayer); if(!active().dead)movePlayer(currentPlayer,-10)},keepTurn:false};render()}
 function prepareRandomAny(){const types=['desafio','bonus','trampa','duelo','ayuda','power'];prepareCard(types[Math.floor(Math.random()*types.length)])}
-function prepareCard(type){soundCard();const list=cards[type];const card=list[Math.floor(Math.random()*list.length)];showCard(card[0],card[1],card[2],`card-${type}`);log(`Carta: ${card[1]}.`);pendingAction={onOk:card[3],onNo:card[4],keepTurn:card[1]==='Dado Mágico'};render()}
+function prepareCard(type){soundCard();const list=cards[type];const card=list[Math.floor(Math.random()*list.length)];showCard(card[0],card[1],card[2],`card-${type}`);log(`Carta: ${card[1]}.`);pendingAction={onOk:()=>{if(type==='desafio')active().stats.challengesWon++; if(type==='trampa')active().stats.trapsHit++; if(type==='bonus')active().stats.bonusUsed++; card[3]()},onNo:()=>{if(type==='desafio')active().stats.challengesFailed++; card[4]()},keepTurn:card[1]==='Dado Mágico'};render()}
 function resolvePending(ok){if(!pendingAction||gameOver)return;const a=pendingAction;pendingAction=null;if(ok){soundOk();log('Acción confirmada con ✅.');a.onOk()}else{soundNo();log('Acción marcada con ❌.');a.onNo()}if(!gameOver&&!a.keepTurn&&!pendingDiceAction)endTurn();render()}
 function showCard(icon,title,text,cls=''){const c=document.getElementById('card');c.className='card-result '+cls;c.innerHTML=`<div class="big">${icon}</div><h3>${title}</h3><p>${text}</p>`}
 
@@ -417,16 +638,23 @@ function moveToNextPortal(){const portals=[29,47,59];const next=portals.find(p=>
 function duelRoll(dice,needed,reward,text){log(`Duelo: salió ${dice}.`); if(dice>=needed){soundOk();log(text);reward()}else{soundNo();log('No ganaste el duelo.')}}
 function shadowDuelRoll(dice){log(`Duelo contra sombra: salió ${dice}.`); if(dice<=2){soundNo();movePlayer(currentPlayer,-1)} else{soundOk();addCoins(currentPlayer,1)}}
 function enemyHiddenRoll(dice){log(`Enemigo escondido: salió ${dice}.`); if(dice<=3)loseLife(currentPlayer); else{soundOk();log('Esquivaste al enemigo.')}}
-function minionRoll(dice,cell,emoji){log(`Estororo ${emoji} en casilla ${cell}: salió ${dice}.`); if(dice>=4){soundOk();showCard('✅','Estororo derrotado','Ganaste el combate. La casilla queda blanca.','card-duel')} else{soundNo();loseLife(currentPlayer); if(!gameOver)showCard(emoji,'Estororo gana','Pierdes 1 vida, pero Estororo desaparece.','card-trap')} defeatedMinions.add(cell);render()}
-function finalBossRoll(dice){log(`Contra ${boss.name}: salió ${dice}.`); if(dice===1||dice===6){bossLives--;soundOk(); if(bossLives<=0){gameOver=true;soundWin();showCard('🏆','¡Victoria Pixel!',`Derrotaron a ${boss.name}.`, 'card-boss');confetti()} else{showCard(boss.emoji,'¡Golpe crítico!',`${boss.name} pierde 1 vida. Le queda ${bossLives}.`, 'card-boss')}} else{soundNo();loseLife(currentPlayer); if(!active().dead)movePlayer(currentPlayer,-10); if(!gameOver)showCard(boss.emoji,'Contraataque',`No salió 1 ni 6. Pierdes 1 vida y retrocedes 10 casillas.`, 'card-boss')} render()}
-function buyReroll(){if(blockedShop())return; if(active().coins>=1){active().coins--;soundOk();log(`${active().name} compra repetir dado.`);render()} else{soundNo();log('No tienes monedas suficientes.')}}
-function buyLife(){if(blockedShop())return; if(active().coins>=3&&active().lives<3){active().coins-=3;addLife(currentPlayer,1);log(`${active().name} compró 1 vida.`)} else{soundNo();log('No puedes comprar vida: necesitas 3 monedas y tener menos de 3 vidas.')}}
-function reviveFromShop(){if(blockedShop())return; const dead=players.findIndex(p=>p.dead); if(dead<0){soundNo();log('No hay jugadores eliminados.');return} if(active().coins<5){soundNo();log('Necesitas 5 monedas para revivir.');return} active().coins-=5; revivePlayer(dead);render()}
+function minionRoll(dice,cell,emoji){active().stats.estororoFights++;log(`Estororo ${emoji} en casilla ${cell}: salió ${dice}.`); if(dice>=4){active().stats.minionsDefeated++;soundOk();showCard('✅','Estororo derrotado','Ganaste el combate. La casilla queda blanca.','card-duel')} else{soundNo();loseLife(currentPlayer); if(!gameOver)showCard(emoji,'Estororo gana','Pierdes 1 vida, pero Estororo desaparece.','card-trap')} defeatedMinions.add(cell);render()}
+function finalBossRoll(dice){log(`Contra ${boss.name}: salió ${dice}.`); if(dice===1||dice===6){active().stats.bossHits++;bossLives--;soundOk(); if(bossLives<=0){gameOver=true;soundWin();showCard('🏆','¡Victoria Pixel!',`Derrotaron a ${boss.name}.`, 'card-boss');confetti();showEndStats(true)} else{showCard(boss.emoji,'¡Golpe crítico!',`${boss.name} pierde 1 vida. Le queda ${bossLives}.`, 'card-boss')}} else{soundNo();loseLife(currentPlayer); if(!active().dead)movePlayer(currentPlayer,-10); if(!gameOver)showCard(boss.emoji,'Contraataque',`No salió 1 ni 6. Pierdes 1 vida y retrocedes 10 casillas.`, 'card-boss')} render()}
+function buyReroll(){if(blockedShop())return; if(active().coins>=1){active().coins--;active().stats.coinsSpent++;soundOk();log(`${active().name} compra repetir dado.`);render()} else{soundNo();log('No tienes monedas suficientes.')}}
+function buyLife(){if(blockedShop())return; if(active().coins>=3&&active().lives<3){active().coins-=3;active().stats.coinsSpent+=3;active().stats.livesBought++;addLife(currentPlayer,1);log(`${active().name} compró 1 vida.`)} else{soundNo();log('No puedes comprar vida: necesitas 3 monedas y tener menos de 3 vidas.')}}
+function reviveFromShop(){if(blockedShop())return; const dead=players.findIndex(p=>p.dead); if(dead<0){soundNo();log('No hay jugadores eliminados.');return} if(active().coins<5){soundNo();log('Necesitas 5 monedas para revivir.');return} active().coins-=5;active().stats.coinsSpent+=5;active().stats.revivesGiven++; revivePlayer(dead);render()}
 function reviveBonus(){const dead=players.findIndex(p=>p.dead); if(dead<0){addCoins(currentPlayer,2);log('No había eliminados: ganas 2 monedas.')} else revivePlayer(dead)}
-function revivePlayer(idx){const minPos=Math.min(...players.filter(p=>!p.dead).map(p=>p.pos)); players[idx].dead=false;players[idx].lives=2;players[idx].pos=Math.max(0,minPos-5);soundOk();log(`${players[idx].name} revive con 2 vidas en casilla ${players[idx].pos}.`);showCard('✨','Jugador revivido',`${players[idx].name} vuelve al juego con 2 vidas.`, 'card-help')}
+function revivePlayer(idx){const minPos=Math.min(...players.filter(p=>!p.dead).map(p=>p.pos)); players[idx].dead=false;players[idx].lives=2;players[idx].pos=Math.max(0,minPos-5);players[idx].stats.revivalsReceived++;soundOk();log(`${players[idx].name} revive con 2 vidas en casilla ${players[idx].pos}.`);showCard('✨','Jugador revivido',`${players[idx].name} vuelve al juego con 2 vidas.`, 'card-help')}
 function blockedShop(){if(gameOver||pendingAction||pendingDiceAction){log('Primero resuelve la acción pendiente.');return true} if(active().dead){log('Jugador eliminado no puede comprar.');return true} return false}
-function resetGame(){soundOk();document.getElementById('startScreen').style.display='flex';document.getElementById('gameArea').style.display='none';document.getElementById('setupError').textContent=''}
+function resetGame(){soundOk();hideEndStats();document.getElementById('startScreen').style.display='flex';document.getElementById('gameArea').style.display='none';document.getElementById('setupError').textContent=''}
 function toggleTheme(){themeIndex=(themeIndex+1)%themes.length;document.body.style.background=`linear-gradient(180deg,${themes[themeIndex][0]},${themes[themeIndex][1]})`}
+function showEndStats(victory){const html=buildEndStats(victory);document.getElementById('endStatsContent').innerHTML=html;document.getElementById('endOverlay').style.display='flex'}
+function hideEndStats(){document.getElementById('endOverlay').style.display='none'}
+function topPlayer(metric){let best=null;players.forEach(p=>{const v=p.stats[metric]||0;if(v>0&&(!best||v>best.value))best={player:p,value:v}});return best}
+function buildEndStats(victory){const achievements=[];const defs=[['🏆 Héroe Pixel','bossHits','Golpeó al villano'],['🪙 Rey de Monedas','coinsEarned','Ganó más monedas'],['⚔️ Cazador de Estororo','minionsDefeated','Derrotó más Estororo'],['🎲 Suerte Dorada','sixes','Sacó más 6'],['❓ Maestro de Desafíos','challengesWon','Completó más desafíos'],['❤️ Guardián del Equipo','revivesGiven','Revivió aliados'],['🌀 Viajero de Portales','portalsUsed','Usó más portales'],['💰 Buscatesoros','treasuresFound','Encontró tesoros']];defs.forEach(d=>{const t=topPlayer(d[1]);if(t)achievements.push(`${d[0]}: ${t.player.emoji} ${t.player.name} (${t.value})`)});const cards=players.map(p=>`<div class="stat-card"><h3><span class="token" style="background:${p.color}">${p.emoji}</span>${p.name} ${p.dead?'💀':''}</h3><div class="stat-row"><span>Estado</span><strong>${p.dead?'Eliminado':'Activo'}</strong></div><div class="stat-row"><span>Vidas finales</span><strong>${p.lives}</strong></div><div class="stat-row"><span>Monedas finales</span><strong>${p.coins}</strong></div><div class="stat-row"><span>Monedas ganadas</span><strong>${p.stats.coinsEarned}</strong></div><div class="stat-row"><span>Monedas gastadas</span><strong>${p.stats.coinsSpent}</strong></div><div class="stat-row"><span>Casillas avanzadas</span><strong>${p.stats.spacesMoved}</strong></div><div class="stat-row"><span>Tiradas de dado</span><strong>${p.stats.diceRolls}</strong></div><div class="stat-row"><span>Números 1 / 6</span><strong>${p.stats.ones} / ${p.stats.sixes}</strong></div><div class="stat-row"><span>Desafíos ganados</span><strong>${p.stats.challengesWon}</strong></div><div class="stat-row"><span>Desafíos fallidos</span><strong>${p.stats.challengesFailed}</strong></div><div class="stat-row"><span>Estororo derrotados</span><strong>${p.stats.minionsDefeated}</strong></div><div class="stat-row"><span>Golpes al villano</span><strong>${p.stats.bossHits}</strong></div><div class="stat-row"><span>Vidas perdidas</span><strong>${p.stats.livesLost}</strong></div><div class="stat-row"><span>Vidas compradas</span><strong>${p.stats.livesBought}</strong></div><div class="stat-row"><span>Revivió / Fue revivido</span><strong>${p.stats.revivesGiven} / ${p.stats.revivalsReceived}</strong></div></div>`).join('');return `<h2>${victory?'🏆 ¡Victoria Pixel!':'💔 Fin de la partida'}</h2><div class="end-summary">${victory?`Derrotaron a ${boss.name}.`: 'Todos los jugadores quedaron eliminados.'}</div><div class="achievement-box"><h3>Logros de la partida</h3><div class="achievement-list">${achievements.length?achievements.map(a=>`<div>${a}</div>`).join(''):'<div>No hubo logros destacados esta vez.</div>'}</div></div><h3>Estadísticas por jugador</h3><div class="stats-grid">${cards}</div>`}
+function openHelp(){document.getElementById('helpOverlay').style.display='flex'}
+function hideHelp(){document.getElementById('helpOverlay').style.display='none'}
+function closeHelp(event){if(event.target.id==='helpOverlay')hideHelp()}
 function log(msg){const box=document.getElementById('log');const item=document.createElement('div');item.textContent='• '+msg;box.prepend(item)}
 function confetti(){['🎉','⭐','✨','🏆','🎊'].forEach((e,i)=>{for(let j=0;j<12;j++){const s=document.createElement('div');s.className='confetti';s.textContent=e;s.style.left=Math.random()*100+'vw';s.style.animationDelay=(Math.random()*.6)+'s';document.body.appendChild(s);setTimeout(()=>s.remove(),2400)}})}
 function ensureAudio(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)()}function beep(freq=440,duration=.08,type='sine',volume=.08){if(!soundEnabled)return;ensureAudio();const osc=audioCtx.createOscillator(),gain=audioCtx.createGain();osc.type=type;osc.frequency.value=freq;gain.gain.value=volume;osc.connect(gain);gain.connect(audioCtx.destination);osc.start();gain.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+duration);osc.stop(audioCtx.currentTime+duration)}function soundDice(){[180,230,170,260,210].forEach((f,i)=>setTimeout(()=>beep(f,.045,'square',.06),i*55))}function soundOk(){beep(520,.07,'triangle',.07);setTimeout(()=>beep(760,.09,'triangle',.07),90)}function soundNo(){beep(220,.08,'sawtooth',.06);setTimeout(()=>beep(160,.12,'sawtooth',.06),90)}function soundWin(){[523,659,784,1046].forEach((f,i)=>setTimeout(()=>beep(f,.12,'triangle',.08),i*130))}function soundCard(){beep(640,.06,'sine',.05);setTimeout(()=>beep(820,.06,'sine',.05),70)}function toggleSound(){soundEnabled=!soundEnabled;document.getElementById('soundButton').textContent=soundEnabled?'🔊 Sonido':'🔇 Silencio';if(soundEnabled)soundOk()}
